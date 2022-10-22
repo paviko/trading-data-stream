@@ -1,0 +1,20 @@
+Copy of the Dukascopy disclaimer accessed 22/10/2022.   https://www.dukascopy.com/trading-tools/disclaimer
+
+DISCLAIMER
+
+The Dukascopy Trading Tools include different financial information. Such data are a result of original and unique methods and technology of
+information gathering, compilation, analysis and statistical evaluation developed by Dukascopy Bank SA. Therefore, such data reflect the current fair
+value of the respective financial instruments as independently assessed by Dukascopy Bank SA and NOT the actual values at a given point in time. If
+you are looking to obtain actual quotes please contact the respective entities that provide this information.
+
+The Dukascopy Trading Tools data and/or any other data available as free product from Dukascopy Bank's website shall not constitute a forecast of the
+market value of any instruments at any future point either, and is not an investment advice or recommendation in any form.
+
+Anyone using and/or putting free web products including all or parts of the information taken from the Dukascopy Trading Tools and/or any other data
+available as free product from Dukascopy Bank's website shall put a clear note to the public that such data are not meant to indicate the actual value
+at any given point in time but represent a discretionary assessment by Dukascopy Bank SA only.
+
+The market data assessment system is in constant development and is provided "AS IS", "AS AVAILABLE", "WITH ALL ITS FAULTS" and is offered without any
+covenants or any express, implied or statutory warranties including (without limitation and qualification) any warranties as to accuracy,
+functionality, performance, merchantability, quiet enjoyment, system integration, data accuracy or fitness for any particular purpose and any
+warranties arising from trade usage, course of dealing or course of performance.

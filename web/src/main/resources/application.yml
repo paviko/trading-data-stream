@@ -1,0 +1,40 @@
+#
+# Copyright (c) Bullioo International Limited 2019-2019
+#
+# Except as otherwise permitted by the Copyright Act 1967 (Cth) (as amended from time to time) and/or any other
+# applicable copyright legislation, the material may not be reproduced in any format and in any way whatsoever
+# without the prior written consent of the copyright owner.
+#
+#spring:
+#  profiles: test
+logging:
+  timezone: Australia/Melbourne
+cloud:
+  aws:
+    stack:
+      auto: false
+    region:
+      static: us-west-2
+server:
+  port: 9000
+spring:
+  application:
+    name: new-application
+
+# for testing purposes
+com:
+  limemojito:
+    aws:
+      control:
+        topic-arn: controlTopic
+        initial-poll-delay-seconds: 1
+        poll-delay-seconds: 1
+
+localstack:
+  sns:
+    url: http://localhost:4566
+  sqs:
+    url: http://localhost:4566
+  s3:
+    url: http://localhost:4566
+    buckets: a-test-bucket

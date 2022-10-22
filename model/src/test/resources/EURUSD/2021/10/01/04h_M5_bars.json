@@ -1,0 +1,134 @@
+[
+  {
+    "startMillisecondsUtc": 1635739200000,
+    "streamId": "00000000-0000-0000-0000-000000000000",
+    "period": "M5",
+    "symbol": "EURUSD",
+    "open": 115504,
+    "high": 115504,
+    "low": 115490,
+    "close": 115492,
+    "source": "Historical"
+  },
+  {
+    "startMillisecondsUtc": 1635739500000,
+    "streamId": "00000000-0000-0000-0000-000000000000",
+    "period": "M5",
+    "symbol": "EURUSD",
+    "open": 115492,
+    "high": 115495,
+    "low": 115490,
+    "close": 115495,
+    "source": "Historical"
+  },
+  {
+    "startMillisecondsUtc": 1635739800000,
+    "streamId": "00000000-0000-0000-0000-000000000000",
+    "period": "M5",
+    "symbol": "EURUSD",
+    "open": 115495,
+    "high": 115495,
+    "low": 115484,
+    "close": 115488,
+    "source": "Historical"
+  },
+  {
+    "startMillisecondsUtc": 1635740100000,
+    "streamId": "00000000-0000-0000-0000-000000000000",
+    "period": "M5",
+    "symbol": "EURUSD",
+    "open": 115487,
+    "high": 115490,
+    "low": 115484,
+    "close": 115484,
+    "source": "Historical"
+  },
+  {
+    "startMillisecondsUtc": 1635740400000,
+    "streamId": "00000000-0000-0000-0000-000000000000",
+    "period": "M5",
+    "symbol": "EURUSD",
+    "open": 115484,
+    "high": 115484,
+    "low": 115475,
+    "close": 115478,
+    "source": "Historical"
+  },
+  {
+    "startMillisecondsUtc": 1635740700000,
+    "streamId": "00000000-0000-0000-0000-000000000000",
+    "period": "M5",
+    "symbol": "EURUSD",
+    "open": 115478,
+    "high": 115486,
+    "low": 115478,
+    "close": 115481,
+    "source": "Historical"
+  },
+  {
+    "startMillisecondsUtc": 1635741000000,
+    "streamId": "00000000-0000-0000-0000-000000000000",
+    "period": "M5",
+    "symbol": "EURUSD",
+    "open": 115481,
+    "high": 115485,
+    "low": 115467,
+    "close": 115469,
+    "source": "Historical"
+  },
+  {
+    "startMillisecondsUtc": 1635741300000,
+    "streamId": "00000000-0000-0000-0000-000000000000",
+    "period": "M5",
+    "symbol": "EURUSD",
+    "open": 115471,
+    "high": 115472,
+    "low": 115460,
+    "close": 115470,
+    "source": "Historical"
+  },
+  {
+    "startMillisecondsUtc": 1635741600000,
+    "streamId": "00000000-0000-0000-0000-000000000000",
+    "period": "M5",
+    "symbol": "EURUSD",
+    "open": 115472,
+    "high": 115479,
+    "low": 115466,
+    "close": 115473,
+    "source": "Historical"
+  },
+  {
+    "startMillisecondsUtc": 1635741900000,
+    "streamId": "00000000-0000-0000-0000-000000000000",
+    "period": "M5",
+    "symbol": "EURUSD",
+    "open": 115473,
+    "high": 115484,
+    "low": 115473,
+    "close": 115479,
+    "source": "Historical"
+  },
+  {
+    "startMillisecondsUtc": 1635742200000,
+    "streamId": "00000000-0000-0000-0000-000000000000",
+    "period": "M5",
+    "symbol": "EURUSD",
+    "open": 115480,
+    "high": 115484,
+    "low": 115478,
+    "close": 115479,
+    "source": "Historical"
+  },
+  {
+    "startMillisecondsUtc": 1635742500000,
+    "streamId": "00000000-0000-0000-0000-000000000000",
+    "period": "M5",
+    "symbol": "EURUSD",
+    "open": 115479,
+    "high": 115519,
+    "low": 115479,
+    "close": 115513,
+    "source": "Historical"
+  }
+]
