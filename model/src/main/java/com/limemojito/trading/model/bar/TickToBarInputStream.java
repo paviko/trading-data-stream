@@ -28,38 +28,35 @@ import java.util.Iterator;
 import static com.limemojito.trading.model.bar.BarVisitor.NO_VISITOR;
 
 /**
- * Note that this class is dangerous to use with large tick input streams as it will perform a bar aggregation on the first object request.
- * This will read all the supplied ticks and generate bars of the appropriate period in memory.
+ * Note that this class aggregates ticks in memory to generate the bars.
+ *
+ * @see TickToBarList
  */
-public class BarInputStream implements TradingInputStream<Bar> {
+public class TickToBarInputStream implements TradingInputStream<Bar> {
     private final TickToBarList delegate;
     private Iterator<Bar> converted;
 
     /**
-     * Note that this method is dangerous to use with large tick input streams as it will perform a bar aggregation on the first object request.
-     * This will read all the supplied ticks and generate bars of the appropriate period in memory.
-     *
      * @param validator       to validate objects
      * @param period          period to aggregate to
      * @param tickInputStream stream to aggregate
      */
-    public BarInputStream(Validator validator, Bar.Period period, TradingInputStream<Tick> tickInputStream) {
+    public TickToBarInputStream(Validator validator,
+                                Bar.Period period,
+                                TradingInputStream<Tick> tickInputStream) {
         this(validator, period, NO_VISITOR, tickInputStream);
     }
 
     /**
-     * Note that this method is dangerous to use with large tick input streams as it will perform a bar aggregation on the first object request.
-     * This will read all the supplied ticks and generate bars of the appropriate period in memory.
-     *
      * @param validator       to validate objects
      * @param period          period to aggregate to
      * @param barVisitor      visit to occur on each bar generated.
      * @param tickInputStream stream to aggregate
      */
-    public BarInputStream(Validator validator,
-                          Bar.Period period,
-                          BarVisitor barVisitor,
-                          TradingInputStream<Tick> tickInputStream) {
+    public TickToBarInputStream(Validator validator,
+                                Bar.Period period,
+                                BarVisitor barVisitor,
+                                TradingInputStream<Tick> tickInputStream) {
         delegate = new TickToBarList(validator, period, tickInputStream, barVisitor);
     }
 

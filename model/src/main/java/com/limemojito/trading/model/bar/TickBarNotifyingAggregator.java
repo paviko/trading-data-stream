@@ -33,6 +33,13 @@ public class TickBarNotifyingAggregator {
     private final Bar.Period aggPeriod;
     private final Validator validator;
 
+    public interface BarNotifier {
+        void notify(Bar bar);
+
+        default void flush() {
+        }
+    }
+
     public TickBarNotifyingAggregator(Validator validator,
                                       BarNotifier barNotifier,
                                       Bar.Period aggregationPeriod) {

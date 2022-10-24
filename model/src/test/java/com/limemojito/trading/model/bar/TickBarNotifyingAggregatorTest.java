@@ -44,7 +44,7 @@ public class TickBarNotifyingAggregatorTest {
     private final Bar.Period aggPeriod = M5;
 
     @Mock
-    private BarNotifier barSender;
+    private TickBarNotifyingAggregator.BarNotifier barSender;
     @Captor
     private ArgumentCaptor<Bar> barCaptor;
 
@@ -98,7 +98,7 @@ public class TickBarNotifyingAggregatorTest {
 
     @Test
     public void shouldCoverDefaultMethod() {
-        final BarNotifier notifier = System.out::println;
+        final TickBarNotifyingAggregator.BarNotifier notifier = System.out::println;
 
         notifier.notify(ModelPrototype.createBar(REALTIME_UUID, "EURUSD", D1, System.currentTimeMillis()));
         notifier.flush();

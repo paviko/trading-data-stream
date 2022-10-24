@@ -39,7 +39,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class BarInputStreamToCsvTest {
+public class TickToBarInputStreamToCsvTest {
 
     private final Validator validator = DukascopyUtils.setupValidator();
 
@@ -101,7 +101,7 @@ public class BarInputStreamToCsvTest {
                 DukascopyTickInputStream ticks = new DukascopyTickInputStream(validator,
                                                                               tickPath,
                                                                               inputStream);
-                TradingInputStream<Bar> barInput = new BarInputStream(validator, period, ticks);
+                TradingInputStream<Bar> barInput = new TickToBarInputStream(validator, period, ticks);
                 BarInputStreamToCsv barCsv = new BarInputStreamToCsv(barInput, outputWriter)
         ) {
             barCsv.convert();

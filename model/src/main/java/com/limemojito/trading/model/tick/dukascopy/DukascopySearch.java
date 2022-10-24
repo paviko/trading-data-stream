@@ -20,7 +20,7 @@ package com.limemojito.trading.model.tick.dukascopy;
 import com.limemojito.trading.model.TradingInputStream;
 import com.limemojito.trading.model.TradingSearch;
 import com.limemojito.trading.model.bar.Bar;
-import com.limemojito.trading.model.bar.BarInputStream;
+import com.limemojito.trading.model.bar.TickToBarInputStream;
 import com.limemojito.trading.model.bar.BarInputStreamToCsv;
 import com.limemojito.trading.model.bar.BarVisitor;
 import com.limemojito.trading.model.tick.Tick;
@@ -107,10 +107,10 @@ public class DukascopySearch implements TradingSearch {
         final List<List<String>> groupedPaths = pathGenerator.generatePathsGroupedByDay(symbol, startDate, endTime);
         for (List<String> dayOfPaths : groupedPaths) {
             final TradingInputStream<Tick> dayOfTicks = generateTickInputStreamFrom(dayOfPaths, tickVisitor);
-            final TradingInputStream<Bar> oneDayOfBarStream = new BarInputStream(validator,
-                                                                                 period,
-                                                                                 barVisitor,
-                                                                                 dayOfTicks);
+            final TradingInputStream<Bar> oneDayOfBarStream = new TickToBarInputStream(validator,
+                                                                                       period,
+                                                                                       barVisitor,
+                                                                                       dayOfTicks);
             barInputStreams.add(oneDayOfBarStream);
         }
         return TradingInputStream.combine(barInputStreams.iterator(),

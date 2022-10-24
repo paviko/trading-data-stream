@@ -52,7 +52,7 @@ public class DirectDukascopy implements DukascopyCache {
     private static final RateLimiter RATE_LIMITER = create(PERMITS_PER_SECOND);
 
     private static final String DUKASCOPY_URL = getProperty(PROP_URL, "https://datafeed.dukascopy.com/datafeed/");
-    private final AtomicInteger retrievePath = new AtomicInteger();
+    private final AtomicInteger retrievePathCounter = new AtomicInteger();
 
 
     @Override
@@ -62,12 +62,12 @@ public class DirectDukascopy implements DukascopyCache {
         final String url = DUKASCOPY_URL + dukascopyPath;
         log.info("Loading from {}, waited {}s", url, waited);
         BufferedInputStream stream = new BufferedInputStream(new URL(url).openStream());
-        retrievePath.incrementAndGet();
+        retrievePathCounter.incrementAndGet();
         return stream;
     }
 
     @Override
     public int getRetrieveCount() {
-        return retrievePath.get();
+        return retrievePathCounter.get();
     }
 }
