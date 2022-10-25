@@ -18,15 +18,18 @@
 package com.limemojito.trading.model.bar;
 
 import com.limemojito.trading.model.ModelPrototype;
+import com.limemojito.trading.model.tick.dukascopy.DukascopyUtils;
 import org.junit.jupiter.api.Test;
 
 import javax.validation.Validator;
 import java.util.Collections;
 import java.util.List;
 
+import static com.limemojito.trading.model.ModelPrototype.createBar;
 import static com.limemojito.trading.model.StreamData.REALTIME_UUID;
-import static com.limemojito.trading.model.TickDataLoader.getValidator;
+import static com.limemojito.trading.model.bar.Bar.Period.D1;
 import static com.limemojito.trading.model.bar.Bar.Period.H1;
+import static com.limemojito.trading.model.bar.Bar.Period.M10;
 import static com.limemojito.trading.model.bar.Bar.Period.M5;
 import static com.limemojito.trading.model.bar.BarTest.assertBar;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -34,13 +37,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class SmallToLargeBarAggregatorTest {
 
-    private final Validator validator = getValidator();
+    private static final Validator VALIDATOR = DukascopyUtils.setupValidator();
 
     @Test
     public void shouldAggregateOneBarsOk() {
-        final List<Bar> m5Bars = ModelPrototype.createBarListDescending(REALTIME_UUID, "EURUSD", M5, 1528174800000L, 1);
+        final List<Bar> m5Bars = createBarListDescendingOf(1);
 
-        List<Bar> aggregated1H = new SmallToLargeBarAggregator(validator).aggregate(H1, m5Bars);
+        List<Bar> aggregated1H = new SmallToLargeBarAggregator(VALIDATOR).aggregate(H1, m5Bars);
 
         assertThat(aggregated1H).hasSize(1);
         assertBar(aggregated1H.get(0),
@@ -57,40 +60,31 @@ public class SmallToLargeBarAggregatorTest {
 
     @Test
     public void shouldFailOnBarsInWrongOrder() {
-        final List<Bar> m5Bars = ModelPrototype.createBarListDescending(REALTIME_UUID, "EURUSD", M5, 1528174800000L, 3);
+        final List<Bar> m5Bars = createBarListDescendingOf(3);
         Collections.reverse(m5Bars);
-        assertThatThrownBy(() -> new SmallToLargeBarAggregator(validator).aggregate(H1, m5Bars)).isInstanceOf(
-                                                                                                        IllegalStateException.class)
-                                                                                                .hasMessage(
-                                                                                                        "BarAggregator requires bars sorted in descending time");
+        assertThrownMessage(m5Bars, "BarAggregator requires bars sorted in descending time");
     }
 
     @Test
     public void shouldFailOnBarsMixedSymbols() {
-        final List<Bar> m5Bars = List.of(ModelPrototype.createBar(REALTIME_UUID, "EURUSD", M5, 1528174800000L),
-                                         ModelPrototype.createBar(REALTIME_UUID, "AUDUSD", M5, 1528174800000L));
-        assertThatThrownBy(() -> new SmallToLargeBarAggregator(validator).aggregate(H1, m5Bars)).isInstanceOf(
-                                                                                                        IllegalStateException.class)
-                                                                                                .hasMessage(
-                                                                                                        "BarAggregator does not support bars with different symbols.  First was EURUSD");
+        final List<Bar> m5Bars = List.of(createBar(REALTIME_UUID, "EURUSD", M5, 1528174800000L),
+                                         createBar(REALTIME_UUID, "AUDUSD", M5, 1528174800000L));
+        assertThrownMessage(m5Bars,
+                            "BarAggregator does not support bars with different symbols.  First was EURUSD");
     }
 
     @Test
     public void shouldAggregateZeroBarsOk() {
-        List<Bar> aggregated1H = new SmallToLargeBarAggregator(validator).aggregate(H1, Collections.emptyList());
+        List<Bar> aggregated1H = new SmallToLargeBarAggregator(VALIDATOR).aggregate(H1, Collections.emptyList());
 
         assertThat(aggregated1H).hasSize(0);
     }
 
     @Test
     public void shouldAggregateTwelveBarsOk() {
-        final List<Bar> m5Bars = ModelPrototype.createBarListDescending(REALTIME_UUID,
-                                                                        "EURUSD",
-                                                                        M5,
-                                                                        1528174800000L,
-                                                                        12);
+        final List<Bar> m5Bars = createBarListDescendingOf(12);
 
-        List<Bar> aggregated1H = new SmallToLargeBarAggregator(validator).aggregate(H1, m5Bars);
+        List<Bar> aggregated1H = new SmallToLargeBarAggregator(VALIDATOR).aggregate(H1, m5Bars);
 
         assertThat(aggregated1H).hasSize(1);
         assertBar(aggregated1H.get(0),
@@ -107,13 +101,9 @@ public class SmallToLargeBarAggregatorTest {
 
     @Test
     public void shouldAggregateBarsAcrossPeriodBoundaries() {
-        final List<Bar> m5Bars = ModelPrototype.createBarListDescending(REALTIME_UUID,
-                                                                        "EURUSD",
-                                                                        M5,
-                                                                        1528174800000L,
-                                                                        24);
+        final List<Bar> m5Bars = createBarListDescendingOf(24);
 
-        List<Bar> aggregated1H = new SmallToLargeBarAggregator(validator).aggregate(H1, m5Bars);
+        List<Bar> aggregated1H = new SmallToLargeBarAggregator(VALIDATOR).aggregate(H1, m5Bars);
 
         assertThat(aggregated1H).hasSize(2);
         assertBar(aggregated1H.get(0),
@@ -140,13 +130,9 @@ public class SmallToLargeBarAggregatorTest {
 
     @Test
     public void shouldAggregateToOddNumberOfPartialBars() {
-        final List<Bar> m5Bars = ModelPrototype.createBarListDescending(REALTIME_UUID,
-                                                                        "EURUSD",
-                                                                        M5,
-                                                                        1528174800000L,
-                                                                        18);
+        final List<Bar> m5Bars = createBarListDescendingOf(18);
 
-        List<Bar> aggregated1H = new SmallToLargeBarAggregator(validator).aggregate(H1, m5Bars);
+        List<Bar> aggregated1H = new SmallToLargeBarAggregator(VALIDATOR).aggregate(H1, m5Bars);
 
         assertThat(aggregated1H).hasSize(2);
         // oldest bar first, so we fill the past bar to capacity before the latest one.
@@ -170,5 +156,36 @@ public class SmallToLargeBarAggregatorTest {
                   116500,
                   116935
         );
+    }
+
+    @Test
+    public void shouldNotAggregateLargeToSmall() {
+        final List<Bar> m5Bars = List.of(createBar(REALTIME_UUID, "EURUSD", D1, 1528174800000L));
+        assertThrownMessage(m5Bars,
+                            "BarAggregator does not support bars with larger periods D1 that the target H1.");
+
+    }
+
+    @Test
+    public void shouldNotAggregateMixedPeriods() {
+        final List<Bar> m5Bars = List.of(createBar(REALTIME_UUID, "EURUSD", M10, 1528174800000L),
+                                         createBar(REALTIME_UUID, "EURUSD", M5, 1528174800000L));
+        assertThrownMessage(m5Bars,
+                            "BarAggregator does not support bars with mixed periods.  First was M10.");
+
+    }
+
+    private static void assertThrownMessage(List<Bar> m5Bars, String message) {
+        assertThatThrownBy(() -> new SmallToLargeBarAggregator(VALIDATOR)
+                .aggregate(Bar.Period.H1, m5Bars)).isInstanceOf(IllegalArgumentException.class)
+                                                  .hasMessage(message);
+    }
+
+    private static List<Bar> createBarListDescendingOf(int numBars) {
+        return ModelPrototype.createBarListDescending(REALTIME_UUID,
+                                                      "EURUSD",
+                                                      M5,
+                                                      1528174800000L,
+                                                      numBars);
     }
 }

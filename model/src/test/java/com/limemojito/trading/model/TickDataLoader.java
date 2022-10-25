@@ -33,21 +33,22 @@ public class TickDataLoader {
 
     private static final Validator VALIDATOR = DukascopyUtils.setupValidator();
 
-    public static Validator getValidator() {
-        return VALIDATOR;
-    }
-
     public static List<Tick> loadTickData(String path) throws IOException {
         final List<Tick> tickList = new LinkedList<>();
-        try (InputStream resourceAsStream = TickDataLoader.class.getResourceAsStream("/" + path)) {
-            assertThat(resourceAsStream).isNotNull();
-            try (TradingInputStream<Tick> streamer = new DukascopyTickInputStream(VALIDATOR, path, resourceAsStream)) {
-                while (streamer.hasNext()) {
-                    Tick tick = streamer.next();
-                    tickList.add(tick);
-                }
+        try (TradingInputStream<Tick> streamer = createTickInputStreamFromClasspath(path)) {
+            while (streamer.hasNext()) {
+                Tick tick = streamer.next();
+                tickList.add(tick);
             }
         }
         return tickList;
+    }
+
+    public static TradingInputStream<Tick> createTickInputStreamFromClasspath(String path) {
+        String resourcePath = "/" + path;
+        InputStream resourceAsStream = TickDataLoader.class.getResourceAsStream(resourcePath);
+        assertThat(resourceAsStream).withFailMessage("Could not load resource " + resourcePath)
+                                    .isNotNull();
+        return new DukascopyTickInputStream(VALIDATOR, path, resourceAsStream);
     }
 }

@@ -30,7 +30,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
 
-import static com.limemojito.trading.model.TickDataLoader.getValidator;
 import static com.limemojito.trading.model.bar.Bar.Period.M5;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -59,7 +58,7 @@ public class TickToBarListTest {
         final String path = resourcePackage + ticks;
         File tempLocation = DukascopyUtils.dukascopyClassResourceToTempFile(path);
 
-        final Validator validator = getValidator();
+        final Validator validator = DukascopyUtils.setupValidator();
         TickToBarList tickToBarList = new TickToBarList(validator,
                                                         M5,
                                                         new DukascopyTickInputStream(validator,

@@ -20,6 +20,7 @@ package com.limemojito.trading.model.bar;
 import com.limemojito.trading.model.UtcTimeUtils;
 import com.limemojito.trading.model.tick.Tick;
 import com.limemojito.trading.model.tick.dukascopy.DukascopyTickInputStream;
+import com.limemojito.trading.model.tick.dukascopy.DukascopyUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -32,7 +33,6 @@ import static com.limemojito.trading.model.ModelPrototype.createTick;
 import static com.limemojito.trading.model.StreamData.REALTIME_UUID;
 import static com.limemojito.trading.model.StreamData.StreamSource.Historical;
 import static com.limemojito.trading.model.StreamData.StreamSource.Live;
-import static com.limemojito.trading.model.TickDataLoader.getValidator;
 import static com.limemojito.trading.model.bar.Bar.Period.H1;
 import static com.limemojito.trading.model.bar.Bar.Period.M5;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,7 +46,7 @@ public class BarTickStreamAggregatorTest {
 
     @BeforeEach
     void setUp() {
-        barAggregator = new BarTickStreamAggregator(getValidator(), REALTIME_UUID, symbol, startMillisecondsUtc, M5);
+        barAggregator = new BarTickStreamAggregator(DukascopyUtils.setupValidator(), REALTIME_UUID, symbol, startMillisecondsUtc, M5);
     }
 
     @Test
@@ -93,7 +93,7 @@ public class BarTickStreamAggregatorTest {
 
     @Test
     public void shouldRoundStartTime() {
-        BarTickStreamAggregator aggregator = new BarTickStreamAggregator(getValidator(),
+        BarTickStreamAggregator aggregator = new BarTickStreamAggregator(DukascopyUtils.setupValidator(),
                                                                          REALTIME_UUID,
                                                                          symbol,
                                                                          Instant.parse("2020-01-05T11:54:43Z"),
@@ -144,7 +144,7 @@ public class BarTickStreamAggregatorTest {
         final String path = "EURUSD/2018/06/05/05h_ticks.bi5";
         final long startMillisecondsUtc = 1530766800000L;
 
-        final Validator validator = getValidator();
+        final Validator validator = DukascopyUtils.setupValidator();
         final Bar.Period period = H1;
         final String symbol = "EURUSD";
         BarTickStreamAggregator aggregator = new BarTickStreamAggregator(validator,

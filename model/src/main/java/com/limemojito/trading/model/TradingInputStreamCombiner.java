@@ -17,31 +17,34 @@
 
 package com.limemojito.trading.model;
 
-import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.function.Predicate;
 
+@Slf4j
 public class TradingInputStreamCombiner<Model> implements TradingInputStream<Model> {
     private final Iterator<TradingInputStream<Model>> inputStreamsIterator;
     private final Predicate<Model> filter;
     private TradingInputStream<Model> inputStream;
     private Model peek;
 
-    public TradingInputStreamCombiner(Iterator<TradingInputStream<Model>> inputStreamsIterator) {
-        this(inputStreamsIterator, a -> true);
-    }
-
-    public TradingInputStreamCombiner(Iterator<TradingInputStream<Model>> inputStreamsIterator,
-                                      Predicate<Model> filter) {
+    /**
+     * Use factory methods on TradingInputStream
+     *
+     * @param inputStreamsIterator streams to combine
+     * @param filter               filter to apply
+     * @see TradingInputStream
+     */
+    TradingInputStreamCombiner(Iterator<TradingInputStream<Model>> inputStreamsIterator,
+                               Predicate<Model> filter) {
         this.inputStreamsIterator = inputStreamsIterator;
         this.filter = filter;
     }
 
     @Override
-    @SneakyThrows
     public Model next() {
         if (peek != null) {
             Model next = peek;
@@ -56,7 +59,6 @@ public class TradingInputStreamCombiner<Model> implements TradingInputStream<Mod
     }
 
     @Override
-    @SneakyThrows
     public boolean hasNext() {
         if (peek != null) {
             return true;
@@ -72,7 +74,7 @@ public class TradingInputStreamCombiner<Model> implements TradingInputStream<Mod
         }
     }
 
-    private Model scanForNextInStreams() throws IOException {
+    private Model scanForNextInStreams() {
         Model found = null;
         while (found == null) {
             inputStreamWithData();
@@ -88,18 +90,25 @@ public class TradingInputStreamCombiner<Model> implements TradingInputStream<Mod
         return found;
     }
 
-    private void inputStreamWithData() throws IOException {
+    private void inputStreamWithData() {
         if (inputStream == null || !inputStream.hasNext()) {
             do {
                 if (inputStream != null) {
-                    inputStream.close();
+                    try {
+                        inputStream.close();
+                    } catch (IOException e) {
+                        log.warn("Error closing input stream {}", e.getMessage(), e);
+                    }
                     inputStream = null;
                 }
                 if (inputStreamsIterator.hasNext()) {
-                    inputStream = inputStreamsIterator.next();
+                    TradingInputStream<Model> nextStream = inputStreamsIterator.next();
+                    if (nextStream.hasNext()) {
+                        inputStream = nextStream;
+                    }
                 }
             }
-            while ((inputStream == null || !inputStream.hasNext()) && inputStreamsIterator.hasNext());
+            while (inputStream == null && inputStreamsIterator.hasNext());
         }
     }
 

@@ -19,7 +19,6 @@ package com.limemojito.trading.model.bar;
 
 import com.limemojito.trading.model.TradingInputStream;
 import com.limemojito.trading.model.tick.Tick;
-import lombok.SneakyThrows;
 
 import javax.validation.Validator;
 import java.io.IOException;
@@ -62,14 +61,12 @@ public class TickToBarInputStream implements TradingInputStream<Bar> {
 
 
     @Override
-    @SneakyThrows
     public Bar next() {
         lazyConvert();
         return converted.next();
     }
 
     @Override
-    @SneakyThrows
     public boolean hasNext() {
         lazyConvert();
         return converted.hasNext();

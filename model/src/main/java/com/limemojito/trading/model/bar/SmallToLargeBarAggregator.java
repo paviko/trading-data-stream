@@ -47,6 +47,7 @@ public class SmallToLargeBarAggregator {
     }
 
     private List<Bar> aggregateOneBar(Period targetPeriod, Bar first) {
+        validateNextBar(targetPeriod, first.getSymbol(), first.getPeriod(), null, first);
         long barStartMillis = Bar.startMilliSecondsFor(targetPeriod, first.getStartMillisecondsUtc());
         return List.of(createBar(first.getSymbol(),
                                  targetPeriod,
@@ -101,23 +102,23 @@ public class SmallToLargeBarAggregator {
 
     private void validateNextBar(Period targetPeriod, String symbol, Period smallPeriod, Bar lastBar, Bar smallerBar) {
         if (!symbol.equals(smallerBar.getSymbol())) {
-            throw new IllegalStateException(format(
+            throw new IllegalArgumentException(format(
                     "BarAggregator does not support bars with different symbols.  First was %s",
                     symbol));
         }
         if (targetPeriod.compareTo(smallerBar.getPeriod()) <= 0) {
-            throw new IllegalStateException(format(
+            throw new IllegalArgumentException(format(
                     "BarAggregator does not support bars with larger periods %s that the target %s.",
                     smallerBar.getPeriod(),
                     targetPeriod));
         }
         if (smallPeriod.compareTo(smallerBar.getPeriod()) != 0) {
-            throw new IllegalStateException(format(
+            throw new IllegalArgumentException(format(
                     "BarAggregator does not support bars with mixed periods.  First was %s.",
                     smallPeriod));
         }
         if (lastBar != null && lastBar.getStartMillisecondsUtc() < smallerBar.getStartMillisecondsUtc()) {
-            throw new IllegalStateException("BarAggregator requires bars sorted in descending time");
+            throw new IllegalArgumentException("BarAggregator requires bars sorted in descending time");
         }
     }
 

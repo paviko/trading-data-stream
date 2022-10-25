@@ -19,10 +19,11 @@ package com.limemojito.trading.model;
 
 import com.google.common.collect.Streams;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 
 import java.io.Closeable;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -30,7 +31,7 @@ public interface TradingInputStream<Model> extends Closeable, Iterable<Model> {
     /**
      * @return null on end of stream.
      */
-    Model next();
+    Model next() throws NoSuchElementException;
 
     boolean hasNext();
 
@@ -55,14 +56,22 @@ public interface TradingInputStream<Model> extends Closeable, Iterable<Model> {
         }
 
         @Override
-        @SneakyThrows
-        public Model next() {
+        public Model next() throws NoSuchElementException {
             return inputStream.next();
         }
     }
 
+    static <Model> TradingInputStream<Model> combine(Collection<TradingInputStream<Model>> inputStreams) {
+        return combine(inputStreams.iterator());
+    }
+
     static <Model> TradingInputStream<Model> combine(Iterator<TradingInputStream<Model>> inputStreams) {
-        return new TradingInputStreamCombiner<>(inputStreams);
+        return combine(inputStreams, a -> true);
+    }
+
+    static <Model> TradingInputStream<Model> combine(Collection<TradingInputStream<Model>> inputStreams,
+                                                     Predicate<Model> filter) {
+        return combine(inputStreams.iterator(), filter);
     }
 
     static <Model> TradingInputStream<Model> combine(Iterator<TradingInputStream<Model>> inputStreams,

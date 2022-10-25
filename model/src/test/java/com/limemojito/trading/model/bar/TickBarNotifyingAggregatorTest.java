@@ -19,6 +19,7 @@ package com.limemojito.trading.model.bar;
 
 import com.limemojito.trading.model.ModelPrototype;
 import com.limemojito.trading.model.TickDataLoader;
+import com.limemojito.trading.model.tick.dukascopy.DukascopyUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,7 +35,6 @@ import java.util.List;
 
 import static com.limemojito.trading.model.StreamData.REALTIME_UUID;
 import static com.limemojito.trading.model.StreamData.StreamSource.Historical;
-import static com.limemojito.trading.model.TickDataLoader.getValidator;
 import static com.limemojito.trading.model.bar.Bar.Period.D1;
 import static com.limemojito.trading.model.bar.Bar.Period.M5;
 import static org.mockito.Mockito.verify;
@@ -52,7 +52,7 @@ public class TickBarNotifyingAggregatorTest {
 
     @BeforeEach
     void setUp() {
-        aggregator = new TickBarNotifyingAggregator(getValidator(), barSender, aggPeriod);
+        aggregator = new TickBarNotifyingAggregator(DukascopyUtils.setupValidator(), barSender, aggPeriod);
     }
 
     @Test
