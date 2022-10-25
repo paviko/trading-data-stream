@@ -17,8 +17,10 @@
 
 package com.limemojito.trading.model.tick.dukascopy.cache;
 
+import com.amazonaws.util.IOUtils;
 import com.limemojito.trading.model.tick.dukascopy.DukascopyCache;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -31,9 +33,9 @@ public abstract class FallbackDukascopyCache implements DukascopyCache {
 
     public FallbackDukascopyCache(DukascopyCache fallback) {
         this.fallback = fallback;
-        cacheMiss = new AtomicInteger();
-        cacheHit = new AtomicInteger();
-        retrieveCount = new AtomicInteger();
+        this.cacheMiss = new AtomicInteger();
+        this.cacheHit = new AtomicInteger();
+        this.retrieveCount = new AtomicInteger();
     }
 
     public int getCacheHitCount() {
@@ -54,10 +56,7 @@ public abstract class FallbackDukascopyCache implements DukascopyCache {
         InputStream stream = checkCache(dukascopyPath);
         if (stream == null) {
             cacheMiss.incrementAndGet();
-            try (InputStream input = fallback.stream(dukascopyPath)) {
-                saveToCache(dukascopyPath, input);
-            }
-            stream = checkCache(dukascopyPath);
+            stream = new ByteArrayInputStream(saveDataFromFallback(dukascopyPath));
         } else {
             cacheHit.incrementAndGet();
         }
@@ -73,4 +72,14 @@ public abstract class FallbackDukascopyCache implements DukascopyCache {
      * @throws IOException on an io failure.
      */
     protected abstract InputStream checkCache(String dukascopyPath) throws IOException;
+
+    private byte[] saveDataFromFallback(String dukascopyPath) throws IOException {
+        try (InputStream fallbackStream = fallback.stream(dukascopyPath)) {
+            final byte[] data = IOUtils.toByteArray(fallbackStream);
+            try (InputStream input = new ByteArrayInputStream(data)) {
+                saveToCache(dukascopyPath, input);
+            }
+            return data;
+        }
+    }
 }

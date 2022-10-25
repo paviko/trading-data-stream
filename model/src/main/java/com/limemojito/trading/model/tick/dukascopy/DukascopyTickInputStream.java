@@ -27,6 +27,7 @@ import org.apache.commons.compress.compressors.lzma.LZMACompressorInputStream;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -178,9 +179,7 @@ public class DukascopyTickInputStream implements TradingInputStream<Tick> {
                     path);
             try {
                 delegate = new LZMACompressorInputStream(inputStream);
-            } catch (IOException e) {
-                log.debug("IO Error reading stream", e);
-                // assume zero length file.
+            } catch (EOFException e) {
                 log.warn("0 length file encountered");
             }
             readAttempted = true;

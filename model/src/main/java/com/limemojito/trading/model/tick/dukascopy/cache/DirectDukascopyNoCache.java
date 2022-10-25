@@ -38,17 +38,18 @@ import static java.lang.System.getProperty;
 @Slf4j
 @RequiredArgsConstructor
 @SuppressWarnings("UnstableApiUsage")
-public class DirectDukascopy implements DukascopyCache {
+public class DirectDukascopyNoCache implements DukascopyCache {
     /**
-     * Defaults to 3 which plays nicely with Dukascopy.  Otherwise, they simply stop responding if you hit the servers too hard.
+     * Defaults to 2ps which plays nicely with Dukascopy.  Otherwise, they simply stop responding (500) if you hit the
+     * servers too hard.
      */
-    public static final String PROP_PERMITS = DirectDukascopy.class.getPackageName() + ".permits";
+    public static final String PROP_PERMITS = DirectDukascopyNoCache.class.getPackageName() + ".permits";
     /**
      * Defaults to <a href="https://datafeed.dukascopy.com/datafeed/">...</a> which plays nicely with Dukascopy.  Otherwise, they simply stop
      * responding if you hit the servers too hard.  Note the slash on the end is required.
      */
-    public static final String PROP_URL = DirectDukascopy.class.getPackageName() + ".url";
-    private static final double PERMITS_PER_SECOND = parseDouble(getProperty(PROP_PERMITS, "3.0"));
+    public static final String PROP_URL = DirectDukascopyNoCache.class.getPackageName() + ".url";
+    private static final double PERMITS_PER_SECOND = parseDouble(getProperty(PROP_PERMITS, "2.0"));
     private static final RateLimiter RATE_LIMITER = create(PERMITS_PER_SECOND);
 
     private static final String DUKASCOPY_URL = getProperty(PROP_URL, "https://datafeed.dukascopy.com/datafeed/");

@@ -148,6 +148,9 @@ public class DukascopyPathGenerator {
     @SuppressWarnings("RedundantModifiersValueLombok")
     private static final class Criteria {
         private Criteria(Instant start, Instant end, String symbol) {
+            if (end.isBefore(start) || end.equals(start)) {
+                throw new IllegalArgumentException(format("End %s must be after %s", end, start));
+            }
             this.startUtc = LocalDateTime.ofInstant(start, UTC);
             this.endUtc = LocalDateTime.ofInstant(end, UTC);
             this.symbol = symbol;

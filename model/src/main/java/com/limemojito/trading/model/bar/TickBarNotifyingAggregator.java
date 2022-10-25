@@ -120,7 +120,7 @@ public class TickBarNotifyingAggregator {
                                                                                symbol,
                                                                                startMillisecondsUtc,
                                                                                period);
-        log.info("Created new aggregator {}: {} {} @ {}", streamId, symbol, period, aggregator.getStartDateInstant());
+        log.debug("Created new aggregator {}: {} {} @ {}", streamId, symbol, period, aggregator.getStartDateInstant());
         return aggregator;
     }
 }

@@ -19,17 +19,18 @@ package com.limemojito.trading.model.tick;
 
 import com.limemojito.trading.model.TradingInputStream;
 import com.limemojito.trading.model.tick.dukascopy.DukascopyTickInputStream;
-import com.limemojito.trading.model.tick.dukascopy.DukascopyUtils;
 import org.apache.commons.compress.utils.IOUtils;
 import org.junit.jupiter.api.Test;
 
 import javax.validation.Validator;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static com.limemojito.trading.model.tick.dukascopy.DukascopyUtils.dukascopyClassResourceToTempFile;
 import static com.limemojito.trading.model.tick.dukascopy.DukascopyUtils.setupValidator;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,11 +39,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 public class TickInputStreamToCsvTest {
 
     private final Validator validator = setupValidator();
+    private final String tickPath = "/EURUSD/2018/06/05/05h_ticks";
 
     @Test
     public void shouldCopyResourceToTempLocation() throws Exception {
         final String path = "/EURUSD/2018/06/05/05h_ticks.bi5";
-        File tempLocation = DukascopyUtils.dukascopyClassResourceToTempFile(path);
+        File tempLocation = dukascopyClassResourceToTempFile(path);
         assertThat(tempLocation).isFile();
         assertThat(tempLocation).hasSize(33117L);
         assertThat(tempLocation.getAbsolutePath()).isEqualTo(new File(System.getProperty("java.io.tmpdir"),
@@ -52,31 +54,54 @@ public class TickInputStreamToCsvTest {
     @Test
     public void shouldFailIfClasspathResourceMissing() {
         final String path = "/EURBCD/2018/06/05/05h_ticks.bi5";
-        assertThatThrownBy(() -> DukascopyUtils.dukascopyClassResourceToTempFile(path)).isInstanceOf(IOException.class)
-                                                                                       .hasMessage(
-                                                                                               "Could not open classpath resource /EURBCD/2018/06/05/05h_ticks.bi5");
+        assertThatThrownBy(() -> dukascopyClassResourceToTempFile(path)).isInstanceOf(IOException.class)
+                                                                        .hasMessage(
+                                                                                "Could not open classpath resource /EURBCD/2018/06/05/05h_ticks.bi5");
 
     }
 
     @Test
-    public void shouldProcessToCsvOk() throws Exception {
-        final String path = "/EURUSD/2018/06/05/05h_ticks.bi5";
-        File tempLocation = DukascopyUtils.dukascopyClassResourceToTempFile(path);
-        File csvOutput = new File(System.getProperty("java.io.tmpdir"), "eurusd-2018-06-05-05h.csv");
-        InputStream expectedCsvData = getClass().getResourceAsStream("/EURUSD/2018/06/05/05h_ticks.csv");
-        assertThat(expectedCsvData).isNotNull();
-
+    public void shouldProcessToCsvOkByWriter() throws Exception {
+        final String dukascopyPath = tickPath + ".bi5";
         try (
-                FileInputStream inputStream = new FileInputStream(tempLocation);
-                FileWriter outputWriter = new FileWriter(csvOutput);
+                FileInputStream inputStream = new FileInputStream(dukascopyClassResourceToTempFile(dukascopyPath));
+                FileWriter outputWriter = new FileWriter(csvOutputFile());
                 TradingInputStream<Tick> ticks = new DukascopyTickInputStream(validator,
-                                                                              path,
+                                                                              dukascopyPath,
                                                                               inputStream);
                 TickInputStreamToCsv csv = new TickInputStreamToCsv(ticks, outputWriter)
         ) {
             csv.convert();
         }
 
+        assertOutputOk(csvOutputFile());
+    }
+
+    @Test
+    public void shouldProcessToCsvOkByOutputStream() throws Exception {
+        final String dukascopyPath = tickPath + ".bi5";
+        try (
+                FileInputStream inputStream = new FileInputStream(dukascopyClassResourceToTempFile(dukascopyPath));
+                FileOutputStream outputStream = new FileOutputStream(csvOutputFile());
+                TradingInputStream<Tick> ticks = new DukascopyTickInputStream(validator,
+                                                                              dukascopyPath,
+                                                                              inputStream);
+                TickInputStreamToCsv csv = new TickInputStreamToCsv(ticks, outputStream)
+        ) {
+            csv.convert();
+        }
+
+        assertOutputOk(csvOutputFile());
+    }
+
+
+    private static File csvOutputFile() {
+        return new File(System.getProperty("java.io.tmpdir"), "eurusd-2018-06-05-05h.csv");
+    }
+
+    private void assertOutputOk(File csvOutput) throws IOException {
+        InputStream expectedCsvData = getClass().getResourceAsStream(tickPath + ".csv");
+        assertThat(expectedCsvData).isNotNull();
         assertThat(csvOutput).isFile();
         assertThat(csvOutput).hasSize(269623L);
         assertThat(csvOutput).hasContent(new String(IOUtils.toByteArray(expectedCsvData), UTF_8));

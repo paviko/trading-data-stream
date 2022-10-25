@@ -21,7 +21,7 @@ import com.limemojito.trading.model.StreamData;
 import com.limemojito.trading.model.TickDataLoader;
 import com.limemojito.trading.model.TradingInputStream;
 import com.limemojito.trading.model.tick.Tick;
-import com.limemojito.trading.model.tick.dukascopy.cache.DirectDukascopy;
+import com.limemojito.trading.model.tick.dukascopy.cache.DirectDukascopyNoCache;
 import org.apache.commons.compress.compressors.lzma.LZMACompressorOutputStream;
 import org.junit.jupiter.api.Test;
 
@@ -47,7 +47,7 @@ public class DukascopyTickInputStreamTest {
     public void shouldRunFromCache() throws Exception {
         final AtomicInteger visitCounter = new AtomicInteger();
         int tickCount = 0;
-        DirectDukascopy cache = new DirectDukascopy();
+        DirectDukascopyNoCache cache = new DirectDukascopyNoCache();
         try (DukascopyTickInputStream input = new DukascopyTickInputStream(VALIDATOR,
                                                                            cache,
                                                                            "EURUSD/2018/06/05/05h_ticks.bi5",
@@ -62,7 +62,7 @@ public class DukascopyTickInputStreamTest {
 
     @Test
     public void shouldRunFromCacheNoVisitor() throws Exception {
-        DirectDukascopy cache = new DirectDukascopy();
+        DirectDukascopyNoCache cache = new DirectDukascopyNoCache();
         try (DukascopyTickInputStream input = new DukascopyTickInputStream(VALIDATOR,
                                                                            cache,
                                                                            "EURUSD/2018/06/05/05h_ticks.bi5")) {

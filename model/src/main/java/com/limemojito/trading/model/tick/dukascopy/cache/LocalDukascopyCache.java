@@ -42,14 +42,10 @@ public class LocalDukascopyCache extends FallbackDukascopyCache {
     /**
      * Property for overriding local cache location.  Defaults to "user.home"/.dukascopy/.
      */
-    public static final String PROP_DIR = DirectDukascopy.class.getPackageName() + ".localCacheDir";
+    public static final String PROP_DIR = DirectDukascopyNoCache.class.getPackageName() + ".localCacheDir";
 
     private static final Path CACHE_DIR = new File(getProperty(PROP_DIR, getProperty("user.home")),
                                                    ".dukascopy").toPath();
-
-    public LocalDukascopyCache() {
-        this(new DirectDukascopy());
-    }
 
     public LocalDukascopyCache(DukascopyCache fallback) {
         super(fallback);
@@ -89,6 +85,7 @@ public class LocalDukascopyCache extends FallbackDukascopyCache {
     protected InputStream checkCache(String dukascopyPath) throws IOException {
         final File file = Path.of(CACHE_DIR.toString(), dukascopyPath).toFile();
         if (file.isFile()) {
+            log.debug("Found in local cache {}", file);
             return new FileInputStream(file);
         }
         return null;

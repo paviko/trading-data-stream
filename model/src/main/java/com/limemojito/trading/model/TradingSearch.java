@@ -42,7 +42,7 @@ public interface TradingSearch {
                                                        Bar.Period period,
                                                        Instant startTime,
                                                        Instant endTime) throws IOException {
-        return aggregateFromTicks(symbol, period, startTime, endTime, TickVisitor.NO_VISITOR, BarVisitor.NO_VISITOR);
+        return aggregateFromTicks(symbol, period, startTime, endTime, BarVisitor.NO_VISITOR, TickVisitor.NO_VISITOR);
     }
 
     default TradingInputStream<Bar> aggregateFromTicks(String symbol,
@@ -50,13 +50,13 @@ public interface TradingSearch {
                                                        Instant startTime,
                                                        Instant endTime,
                                                        BarVisitor barVisitor) throws IOException {
-        return aggregateFromTicks(symbol, period, startTime, endTime, TickVisitor.NO_VISITOR, barVisitor);
+        return aggregateFromTicks(symbol, period, startTime, endTime, barVisitor, TickVisitor.NO_VISITOR);
     }
 
     TradingInputStream<Bar> aggregateFromTicks(String symbol,
                                                Bar.Period period,
                                                Instant startTime,
                                                Instant endTime,
-                                               TickVisitor tickVisitor,
-                                               BarVisitor barVisitor) throws IOException;
+                                               BarVisitor barVisitor,
+                                               TickVisitor tickVisitor) throws IOException;
 }

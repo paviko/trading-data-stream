@@ -19,6 +19,7 @@ package com.limemojito.trading.model.tick.dukascopy.cache;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.limemojito.trading.model.tick.dukascopy.DukascopyCache;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.utils.IOUtils;
@@ -39,16 +40,6 @@ public class S3DukascopyCache extends FallbackDukascopyCache {
     private final AmazonS3 s3;
     private final String bucketName;
 
-    /**
-     * Fallback to direct cache  .
-     *
-     * @param s3         S3 client
-     * @param bucketName bucketName to store data in (Dukascopy path structure).
-     */
-    public S3DukascopyCache(AmazonS3 s3, String bucketName) {
-        this(s3, bucketName, new DirectDukascopy());
-    }
-
     public S3DukascopyCache(AmazonS3 s3, String bucketName, DukascopyCache fallback) {
         super(fallback);
         this.s3 = s3;
@@ -64,7 +55,7 @@ public class S3DukascopyCache extends FallbackDukascopyCache {
         metadata.setContentDisposition(dukascopyPath);
         try (ByteArrayInputStream s3Input = new ByteArrayInputStream(bytes)) {
             log.info("Saving to s3://{}/{}", bucketName, dukascopyPath);
-            s3.putObject(bucketName, dukascopyPath, s3Input, metadata);
+            s3.putObject(new PutObjectRequest(bucketName, dukascopyPath, s3Input, metadata));
         }
     }
 
