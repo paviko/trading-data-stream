@@ -22,12 +22,14 @@ import com.limemojito.trading.model.bar.Bar;
 import com.limemojito.trading.model.tick.Tick;
 import com.limemojito.trading.model.tick.dukascopy.cache.DirectDukascopyNoCache;
 import com.limemojito.trading.model.tick.dukascopy.cache.LocalDukascopyCache;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.validation.Validator;
 import java.io.IOException;
 import java.time.Instant;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.limemojito.trading.model.bar.Bar.Period.H1;
 import static com.limemojito.trading.model.bar.Bar.Period.H4;
@@ -37,6 +39,7 @@ import static com.limemojito.trading.model.bar.Bar.Period.M5;
 import static com.limemojito.trading.model.tick.dukascopy.DukascopyUtils.setupValidator;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Slf4j
 public class DukascopySearchTest {
 
     private static final Validator VALIDATOR = setupValidator();
@@ -83,6 +86,21 @@ public class DukascopySearchTest {
     @Test
     public void shouldWorkWithMain() throws Exception {
         DukascopySearch.main("EURUSD", "M5", "2020-01-02T00:00:00Z", "2020-01-02T00:59:59Z");
+    }
+
+    @Test
+    public void shouldGetBarsWithVisitor() throws Exception {
+        AtomicInteger barCounter = new AtomicInteger();
+        try (TradingInputStream<Bar> stream = search.aggregateFromTicks("NZDUSD",
+                                                                        M5,
+                                                                        Instant.parse("2020-01-02T00:00:00Z"),
+                                                                        Instant.parse("2020-01-02T00:59:59Z"),
+                                                                        (bar) -> barCounter.incrementAndGet())) {
+            for (Bar bar : stream) {
+                log.info("Counting bar {} via visitor", bar);
+            }
+        }
+        assertThat(barCounter.get()).isEqualTo(12);
     }
 
     private void searchBarsExpect(String symbol,
