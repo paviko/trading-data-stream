@@ -53,7 +53,7 @@ public class DataStreamCli {
      * @param s3         amazon S3 client only enabled on s3 profile (--spring.profiles.active=s3)
      * @param bucketName Name of s3 bucket to use as 2nd level cache. (--bucket-name=my-tick-bucket)
      * @param direct     Direct access bean.
-     * @return a configured Local -> S3 -> Direct cache.
+     * @return a configured Local -&gt; S3 -&gt; Direct cache.
      */
     @Profile("s3")
     @Bean
@@ -68,7 +68,7 @@ public class DataStreamCli {
      * Only enabled when the profile is not s3 (including default).
      *
      * @param direct Direct access bean.
-     * @return a configured Local -> Direct cache.
+     * @return a configured Local -&gt; Direct cache.
      */
     @Profile("!s3")
     @Bean
