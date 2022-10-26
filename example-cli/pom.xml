@@ -21,7 +21,7 @@
 
     <groupId>com.limemojito.oss.trading.trading-data-stream</groupId>
     <artifactId>example-cli</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <parent>
@@ -44,7 +44,7 @@
         <dependency>
             <groupId>com.limemojito.oss.trading.trading-data-stream</groupId>
             <artifactId>model</artifactId>
-            <version>1.0.0</version>
+            <version>1.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>
@@ -64,8 +64,4 @@
         </dependency>
 
     </dependencies>
-
-  <scm>
-    <tag>trading-data-stream-1.0.0</tag>
-  </scm>
 </project>
