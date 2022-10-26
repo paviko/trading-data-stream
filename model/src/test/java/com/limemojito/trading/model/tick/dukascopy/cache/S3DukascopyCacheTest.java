@@ -95,7 +95,7 @@ public class S3DukascopyCacheTest {
     private void assertPutRequest(PutObjectRequest request) {
         assertThat(request.getBucketName()).isEqualTo(bucketName);
         assertThat(request.getKey()).isEqualTo(dukascopyTickPath);
-        assertThat(request.getMetadata().getContentLength()).isEqualTo(33117L);
+        assertThat(request.getMetadata().getContentLength()).isGreaterThan(33000L);
         assertThat(request.getMetadata().getContentType()).isEqualTo("application/octet-stream");
         assertThat(request.getMetadata().getContentDisposition()).isEqualTo(dukascopyTickPath);
     }
