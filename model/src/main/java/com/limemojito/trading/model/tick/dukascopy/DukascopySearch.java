@@ -52,6 +52,7 @@ public class DukascopySearch implements TradingSearch {
      * A simple search using local cache, generating bars
      *
      * @param args symbol, period, start (yyyy-MM-ddTHH:mm:ssZ), end (yyyy-MM-ddTHH:mm:ssZ)
+     * @throws IOException on an IO failure.
      */
     @SuppressWarnings("MagicNumber")
     public static void main(String... args) throws IOException {
