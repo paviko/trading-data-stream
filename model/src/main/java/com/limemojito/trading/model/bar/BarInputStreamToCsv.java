@@ -51,7 +51,7 @@ public class BarInputStreamToCsv implements AutoCloseable {
         log.info("Begin convert to CSV");
         int barCount = 0;
         try (CSVPrinter printer = new CSVPrinter(outputWriter, CSVFormat.EXCEL)) {
-            printer.printRecord("Time", "Symbol", "Period", "Open", "High", "Low", "Close");
+            printer.printRecord("Epoch Time (UTC)", "Symbol", "Period", "Open", "High", "Low", "Close");
             printer.printComment("Generated " + ZonedDateTime.now());
             while (barInputStream.hasNext()) {
                 Bar bar = barInputStream.next();

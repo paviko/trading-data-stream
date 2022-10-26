@@ -2,4 +2,5 @@ atlassian-ide-plugin.xml
 *iml
 .idea
 target
+*.csv
 

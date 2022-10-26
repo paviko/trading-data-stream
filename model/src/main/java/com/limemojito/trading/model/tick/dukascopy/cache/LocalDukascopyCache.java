@@ -45,7 +45,7 @@ public class LocalDukascopyCache extends FallbackDukascopyCache {
     public static final String PROP_DIR = DirectDukascopyNoCache.class.getPackageName() + ".localCacheDir";
 
     private static final Path CACHE_DIR = new File(getProperty(PROP_DIR, getProperty("user.home")),
-                                                   ".dukascopy").toPath();
+                                                   ".dukascopy-cache").toPath();
 
     public LocalDukascopyCache(DukascopyCache fallback) {
         super(fallback);

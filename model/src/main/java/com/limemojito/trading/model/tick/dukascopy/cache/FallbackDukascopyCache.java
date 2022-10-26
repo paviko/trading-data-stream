@@ -38,19 +38,6 @@ public abstract class FallbackDukascopyCache implements DukascopyCache {
         this.retrieveCount = new AtomicInteger();
     }
 
-    public int getCacheHitCount() {
-        return cacheHit.get();
-    }
-
-    public int getCacheMissCount() {
-        return cacheMiss.get();
-    }
-
-    @Override
-    public int getRetrieveCount() {
-        return retrieveCount.get();
-    }
-
     @Override
     public InputStream stream(String dukascopyPath) throws IOException {
         InputStream stream = checkCache(dukascopyPath);
@@ -62,6 +49,33 @@ public abstract class FallbackDukascopyCache implements DukascopyCache {
         }
         retrieveCount.incrementAndGet();
         return stream;
+    }
+
+    @Override
+    public int getHitCount() {
+        return cacheHit.get();
+    }
+
+    @Override
+    public int getMissCount() {
+        return cacheMiss.get();
+    }
+
+    @Override
+    public int getRetrieveCount() {
+        return retrieveCount.get();
+    }
+
+    @Override
+    public String cacheStats() {
+        final double toPercent = 100.0;
+        return String.format("%s %d %dh %dm %.2f%% -> (%s)",
+                             getClass().getSimpleName(),
+                             getRetrieveCount(),
+                             getHitCount(),
+                             getMissCount(),
+                             (getHitCount() / (double) getRetrieveCount()) * toPercent,
+                             fallback.cacheStats());
     }
 
     protected abstract void saveToCache(String dukascopyPath, InputStream input) throws IOException;

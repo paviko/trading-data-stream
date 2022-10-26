@@ -68,10 +68,12 @@ public class S3DukascopyCacheTest {
     public void shouldPullFromS3Ok() throws IOException {
         doReturn(true).when(s3).doesObjectExist(bucketName, dukascopyTickPath);
         doReturn(validObject()).when(s3).getObject(bucketName, dukascopyTickPath);
+        doReturn("mockCache").when(fallbackMock).cacheStats();
 
         try (InputStream stream = cache.stream(dukascopyTickPath)) {
             assertStreamResult(stream, 1, 0);
         }
+        assertThat(cache.cacheStats()).isEqualTo("S3DukascopyCache 1 1h 0m 100.00% -> (mockCache)");
     }
 
     @Test
@@ -80,12 +82,14 @@ public class S3DukascopyCacheTest {
         doReturn(false).when(s3).doesObjectExist(bucketName, dukascopyTickPath);
         doReturn(validInputStream()).when(fallbackMock).stream(dukascopyTickPath);
         doReturn(new PutObjectResult()).when(s3).putObject(putRequestCaptor.capture());
+        doReturn("mockCache").when(fallbackMock).cacheStats();
 
         try (InputStream stream = cache.stream(dukascopyTickPath)) {
             assertStreamResult(stream, 0, 1);
         }
         verify(s3).putObject(putRequestCaptor.getValue());
         assertPutRequest(putRequestCaptor.getValue());
+        assertThat(cache.cacheStats()).isEqualTo("S3DukascopyCache 1 0h 1m 0.00% -> (mockCache)");
     }
 
     private void assertPutRequest(PutObjectRequest request) {
@@ -98,8 +102,8 @@ public class S3DukascopyCacheTest {
 
     private void assertStreamResult(InputStream stream, int hits, int misses) {
         assertThat(stream).isNotNull();
-        assertThat(cache.getCacheHitCount()).isEqualTo(hits);
-        assertThat(cache.getCacheMissCount()).isEqualTo(misses);
+        assertThat(cache.getHitCount()).isEqualTo(hits);
+        assertThat(cache.getMissCount()).isEqualTo(misses);
         assertThat(cache.getRetrieveCount()).isEqualTo(hits + misses);
     }
 

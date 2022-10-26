@@ -24,5 +24,11 @@ public interface DukascopyCache {
 
     InputStream stream(String dukascopyPath) throws IOException;
 
+    int getHitCount();
+
+    int getMissCount();
+
     int getRetrieveCount();
+
+    String cacheStats();
 }

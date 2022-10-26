@@ -55,7 +55,6 @@ public class DirectDukascopyNoCache implements DukascopyCache {
     private static final String DUKASCOPY_URL = getProperty(PROP_URL, "https://datafeed.dukascopy.com/datafeed/");
     private final AtomicInteger retrievePathCounter = new AtomicInteger();
 
-
     @Override
     public InputStream stream(String dukascopyPath) throws IOException {
         // play nice with Dukascopy's free data.  And if you don't they stop sending data.
@@ -70,5 +69,20 @@ public class DirectDukascopyNoCache implements DukascopyCache {
     @Override
     public int getRetrieveCount() {
         return retrievePathCounter.get();
+    }
+
+    @Override
+    public int getHitCount() {
+        return 0;
+    }
+
+    @Override
+    public int getMissCount() {
+        return getRetrieveCount();
+    }
+
+    @Override
+    public String cacheStats() {
+        return String.format("DirectDukascopyNoCache: %d retrieve(s)", getRetrieveCount());
     }
 }

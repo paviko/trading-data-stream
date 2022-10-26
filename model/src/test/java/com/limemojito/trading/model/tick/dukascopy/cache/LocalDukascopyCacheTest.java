@@ -59,10 +59,13 @@ public class LocalDukascopyCacheTest {
     @Test
     public void shouldPullFromFallbackWhenMissingFromLocalCache() throws IOException {
         doReturn(validInputStream()).when(fallbackMock).stream(dukascopyTickPath);
+        doReturn("mock cache").when(fallbackMock).cacheStats();
 
         try (InputStream stream = cache.stream(dukascopyTickPath)) {
             assertStreamResult(stream, 0, 1);
         }
+
+        assertThat(cache.cacheStats()).isEqualTo("LocalDukascopyCache 1 0h 1m 0.00% -> (mock cache)");
     }
 
     @Test
@@ -79,8 +82,8 @@ public class LocalDukascopyCacheTest {
 
     private void assertStreamResult(InputStream stream, int hits, int misses) {
         assertThat(stream).isNotNull();
-        assertThat(cache.getCacheHitCount()).isEqualTo(hits);
-        assertThat(cache.getCacheMissCount()).isEqualTo(misses);
+        assertThat(cache.getHitCount()).isEqualTo(hits);
+        assertThat(cache.getMissCount()).isEqualTo(misses);
         assertThat(cache.getRetrieveCount()).isEqualTo(hits + misses);
     }
 
