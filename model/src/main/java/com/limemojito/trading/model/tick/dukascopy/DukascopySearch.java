@@ -46,9 +46,13 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class DukascopySearch implements TradingSearch {
+    /**
+     * Defaulting the beginning of Dukascopy searches to be 2010.  This puts a limit on recursive searching.
+     */
+    public static final String DEFAULT_BEGINNING_OF_TIME = "2010-01-01T00:00:00Z";
     @Setter
     @Getter
-    private Instant beginningOfTime = Instant.parse("2010-01-01T00:00:00Z");
+    private Instant beginningOfTime = Instant.parse(DEFAULT_BEGINNING_OF_TIME);
     private final Validator validator;
     private final DukascopyCache cache;
     private final DukascopyPathGenerator pathGenerator;
