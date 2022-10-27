@@ -23,6 +23,7 @@ import com.limemojito.trading.model.tick.Tick;
 import com.limemojito.trading.model.tick.dukascopy.cache.DirectDukascopyNoCache;
 import com.limemojito.trading.model.tick.dukascopy.cache.LocalDukascopyCache;
 import lombok.extern.slf4j.Slf4j;
+import org.assertj.core.api.ThrowableAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -38,6 +39,7 @@ import static com.limemojito.trading.model.bar.Bar.Period.M30;
 import static com.limemojito.trading.model.bar.Bar.Period.M5;
 import static com.limemojito.trading.model.tick.dukascopy.DukascopyUtils.setupValidator;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @Slf4j
 public class DukascopySearchTest {
@@ -50,6 +52,48 @@ public class DukascopySearchTest {
         DukascopyCache cacheChain = new LocalDukascopyCache(new DirectDukascopyNoCache());
         DukascopyPathGenerator pathGenerator = new DukascopyPathGenerator();
         search = new DukascopySearch(VALIDATOR, cacheChain, pathGenerator);
+    }
+
+    @Test
+    @SuppressWarnings("resource")
+    public void shouldFailIfEndPastTheBeginningOfTime() {
+        assertThat(search.getBeginningOfTime()).isEqualTo("2010-01-01T00:00:00Z");
+        search.setBeginningOfTime(Instant.parse("2018-01-01T00:00:00Z"));
+        assertThat(search.getBeginningOfTime()).isEqualTo("2018-01-01T00:00:00Z");
+        Instant start = Instant.parse("2009-01-02T00:59:59Z");
+        Instant end = Instant.parse("2020-01-02T00:00:00Z");
+        String expectedMessage = "Start 2009-01-02T00:59:59Z must be before 2018-01-01T00:00:00Z";
+        assertPastTheBeginningOfTime(expectedMessage,
+                                     () -> search.search("EURUSD",
+                                                         start,
+                                                         end));
+        assertPastTheBeginningOfTime(expectedMessage,
+                                     () -> search.search("AUDUSD",
+                                                         start,
+                                                         end,
+                                                         tick -> {
+                                                         }));
+        assertPastTheBeginningOfTime(expectedMessage,
+                                     () -> search.aggregateFromTicks("USDJPY",
+                                                                     H1,
+                                                                     start,
+                                                                     end));
+        assertPastTheBeginningOfTime(expectedMessage,
+                                     () -> search.aggregateFromTicks("AUDUSD",
+                                                                     H1,
+                                                                     start,
+                                                                     end,
+                                                                     bar -> {
+                                                                     }));
+        assertPastTheBeginningOfTime(expectedMessage,
+                                     () -> search.aggregateFromTicks("EURUSD",
+                                                                     H1,
+                                                                     start,
+                                                                     end,
+                                                                     bar -> {
+                                                                     },
+                                                                     tick -> {
+                                                                     }));
     }
 
     @Test
@@ -122,4 +166,9 @@ public class DukascopySearchTest {
         }
     }
 
+    private static void assertPastTheBeginningOfTime(String expectedMessage, ThrowableAssert.ThrowingCallable method) {
+        assertThatThrownBy(method)
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage(expectedMessage);
+    }
 }

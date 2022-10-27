@@ -27,17 +27,66 @@ import java.time.Instant;
 
 public interface TradingSearch {
 
+    /**
+     * Sets the limit of searching.
+     *
+     * @param beginningOfTime past this point searches will end data.
+     */
+    void setBeginningOfTime(Instant beginningOfTime);
+
+    /**
+     * Gets the limit of searching.
+     *
+     * @return The point where searches past will stop
+     */
+    Instant getBeginningOfTime();
+
+    /**
+     * Retrieve a steam of ticks.
+     *
+     * @param symbol    Symbol to search on.
+     * @param startTime Time to begin search at
+     * @param endTime   Time to end search at (inclusive)
+     * @return Tick data matching the search request.
+     * @throws IOException              on a data failure.
+     * @throws IllegalArgumentException if the start time is < the beginningOfTime.
+     * @see #getBeginningOfTime()
+     */
     default TradingInputStream<Tick> search(String symbol,
                                             Instant startTime,
                                             Instant endTime) throws IOException {
         return search(symbol, startTime, endTime, TickVisitor.NO_VISITOR);
     }
 
+    /**
+     * Retrieve a steam of ticks.
+     *
+     * @param symbol      Symbol to search on.
+     * @param startTime   Time to begin search at
+     * @param endTime     Time to end search at (inclusive)
+     * @param tickVisitor Visitor to apply as each tick is found.
+     * @return Tick data matching the search request.
+     * @throws IOException              on a data failure.
+     * @throws IllegalArgumentException if the start time is < the beginningOfTime.
+     * @see #getBeginningOfTime()
+     */
     TradingInputStream<Tick> search(String symbol,
                                     Instant startTime,
                                     Instant endTime,
                                     TickVisitor tickVisitor) throws IOException;
 
+    /**
+     * Retrieve a steam of bars by aggregating ticks.
+     *
+     * @param symbol    Symbol to search on.
+     * @param period    Period to aggregate ticks to.
+     * @param startTime Time to begin search at
+     * @param endTime   Time to end search at (inclusive)
+     * @return Bar data matching the search request.
+     * @throws IOException              on a data failure.
+     * @throws IllegalArgumentException if the start time is < the beginningOfTime.
+     * @see #getBeginningOfTime()
+     */
     default TradingInputStream<Bar> aggregateFromTicks(String symbol,
                                                        Bar.Period period,
                                                        Instant startTime,
@@ -45,6 +94,19 @@ public interface TradingSearch {
         return aggregateFromTicks(symbol, period, startTime, endTime, BarVisitor.NO_VISITOR, TickVisitor.NO_VISITOR);
     }
 
+    /**
+     * Retrieve a steam of bars by aggregating ticks.
+     *
+     * @param symbol     Symbol to search on.
+     * @param period     Period to aggregate ticks to.
+     * @param startTime  Time to begin search at
+     * @param endTime    Time to end search at (inclusive)
+     * @param barVisitor Visitor to apply as each bar is formed.
+     * @return Bar data matching the search request.
+     * @throws IOException              on a data failure.
+     * @throws IllegalArgumentException if the start time is < the beginningOfTime.
+     * @see #getBeginningOfTime()
+     */
     default TradingInputStream<Bar> aggregateFromTicks(String symbol,
                                                        Bar.Period period,
                                                        Instant startTime,
@@ -53,6 +115,20 @@ public interface TradingSearch {
         return aggregateFromTicks(symbol, period, startTime, endTime, barVisitor, TickVisitor.NO_VISITOR);
     }
 
+    /**
+     * Retrieve a steam of bars by aggregating ticks.
+     *
+     * @param symbol      Symbol to search on.
+     * @param period      Period to aggregate ticks to.
+     * @param startTime   Time to begin search at
+     * @param endTime     Time to end search at (inclusive)
+     * @param barVisitor  Visitor to apply as each bar is formed.
+     * @param tickVisitor Visitor to apply as each tick is found.
+     * @return Bar data matching the search request.
+     * @throws IOException              on a data failure.
+     * @throws IllegalArgumentException if the start time is < the beginningOfTime.
+     * @see #getBeginningOfTime()
+     */
     TradingInputStream<Bar> aggregateFromTicks(String symbol,
                                                Bar.Period period,
                                                Instant startTime,
