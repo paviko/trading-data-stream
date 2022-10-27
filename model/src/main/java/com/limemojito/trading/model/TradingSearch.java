@@ -25,6 +25,10 @@ import com.limemojito.trading.model.tick.TickVisitor;
 import java.io.IOException;
 import java.time.Instant;
 
+/**
+ * Interface to different search engines.
+ * Note all bar streams are from oldest to youngest, ie (2010 -> 2018)
+ */
 public interface TradingSearch {
 
     /**
@@ -135,4 +139,144 @@ public interface TradingSearch {
                                                Instant endTime,
                                                BarVisitor barVisitor,
                                                TickVisitor tickVisitor) throws IOException;
+
+    /**
+     * Retrieve a steam of bars by aggregating ticks, limited count backwards in time.
+     *
+     * @param symbol         Symbol to search on.
+     * @param period         Period to aggregate ticks to.
+     * @param barCountBefore Number of bars to find before the end time.
+     * @param endTime        The time that the bar start instants must be before.
+     * @return Bar data matching the search request or best effort before the end of time.
+     * @throws IOException on a data failure.
+     * @see #getTheBeginningOfTime()
+     */
+    default TradingInputStream<Bar> aggregateFromTicks(String symbol,
+                                                       Bar.Period period,
+                                                       int barCountBefore,
+                                                       Instant endTime) throws IOException {
+        return aggregateFromTicks(symbol,
+                                  period,
+                                  barCountBefore,
+                                  endTime,
+                                  BarVisitor.NO_VISITOR,
+                                  TickVisitor.NO_VISITOR);
+    }
+
+    /**
+     * Retrieve a steam of bars by aggregating ticks, limited count.
+     *
+     * @param symbol         Symbol to search on.
+     * @param period         Period to aggregate ticks to.
+     * @param barCountBefore Number of bars to find before the end time.
+     * @param endTime        The time that the bar start instants must be before.
+     * @return Bar data matching the search request or best effort before the end of time.
+     * @throws IOException on a data failure.
+     * @see #getTheBeginningOfTime()
+     */
+    default TradingInputStream<Bar> aggregateFromTicks(String symbol,
+                                                       Bar.Period period,
+                                                       int barCountBefore,
+                                                       Instant endTime,
+                                                       BarVisitor barVisitor) throws IOException {
+        return aggregateFromTicks(symbol,
+                                  period,
+                                  barCountBefore,
+                                  endTime,
+                                  barVisitor,
+                                  TickVisitor.NO_VISITOR);
+    }
+
+    /**
+     * Retrieve a steam of bars by aggregating ticks, limited count.
+     *
+     * @param symbol         Symbol to search on.
+     * @param period         Period to aggregate ticks to.
+     * @param barCountBefore Number of bars to find before the end time.
+     * @param endTime        The time that the bar start instants must be before.
+     * @param barVisitor     Visitor to apply as each bar is formed.
+     * @param tickVisitor    Visitor to apply as each tick is found.
+     * @return Bar data matching the search request or best effort before the end of time.
+     * @throws IOException on a data failure.
+     * @see #getTheBeginningOfTime()
+     */
+    TradingInputStream<Bar> aggregateFromTicks(String symbol,
+                                               Bar.Period period,
+                                               int barCountBefore,
+                                               Instant endTime,
+                                               BarVisitor barVisitor,
+                                               TickVisitor tickVisitor) throws IOException;
+
+    /**
+     * Retrieve a steam of bars by aggregating ticks, limited count forwards in time.
+     *
+     * @param symbol        Symbol to search on.
+     * @param period        Period to aggregate ticks to.
+     * @param startTime     The time that the bar start instants must be after (inclusive).
+     * @param barCountAfter Number of bars to find before the end time.
+     * @return Bar data matching the search request or best effort before the current time.
+     * @throws IOException on a data failure.
+     */
+    default TradingInputStream<Bar> aggregateFromTicks(String symbol,
+                                                       Bar.Period period,
+                                                       Instant startTime,
+                                                       int barCountAfter) throws IOException {
+        return aggregateFromTicks(symbol,
+                                  period,
+                                  startTime,
+                                  barCountAfter,
+                                  BarVisitor.NO_VISITOR,
+                                  TickVisitor.NO_VISITOR);
+    }
+
+    /**
+     * Retrieve a steam of bars by aggregating ticks, limited count forwards in time.
+     *
+     * @param symbol        Symbol to search on.
+     * @param period        Period to aggregate ticks to.
+     * @param startTime     The time that the bar start instants must be after (inclusive).
+     * @param barCountAfter Number of bars to find before the end time.
+     * @param barVisitor    Visitor to apply as each bar is formed.
+     * @return Bar data matching the search request or best effort before the current time.
+     * @throws IOException on a data failure.
+     */
+    default TradingInputStream<Bar> aggregateFromTicks(String symbol,
+                                                       Bar.Period period,
+                                                       Instant startTime,
+                                                       int barCountAfter,
+                                                       BarVisitor barVisitor) throws IOException {
+        return aggregateFromTicks(symbol,
+                                  period,
+                                  startTime,
+                                  barCountAfter,
+                                  BarVisitor.NO_VISITOR,
+                                  TickVisitor.NO_VISITOR);
+    }
+
+    /**
+     * Retrieve a steam of bars by aggregating ticks, limited count forwards in time.
+     *
+     * @param symbol        Symbol to search on.
+     * @param period        Period to aggregate ticks to.
+     * @param startTime     The time that the bar start instants must be after (inclusive).
+     * @param barCountAfter Number of bars to find before the end time.
+     * @param barVisitor    Visitor to apply as each bar is formed.
+     * @param tickVisitor   Visitor to apply as each tick is found.
+     * @return Bar data matching the search request or best effort before the current time.
+     * @throws IOException on a data failure.
+     */
+    default TradingInputStream<Bar> aggregateFromTicks(String symbol,
+                                                       Bar.Period period,
+                                                       Instant startTime,
+                                                       int barCountAfter,
+                                                       BarVisitor barVisitor,
+                                                       TickVisitor tickVisitor) throws IOException {
+        return TradingInputForwardStreamExtender.extend(symbol,
+                                                        period,
+                                                        startTime,
+                                                        barCountAfter,
+                                                        barVisitor,
+                                                        tickVisitor,
+                                                        this);
+    }
 }

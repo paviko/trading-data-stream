@@ -19,6 +19,8 @@ package com.limemojito.trading.model.bar;
 
 import com.limemojito.trading.model.TradingInputStream;
 import com.limemojito.trading.model.tick.Tick;
+import com.limemojito.trading.model.tick.dukascopy.DukascopyTickInputStream;
+import com.limemojito.trading.model.tick.dukascopy.cache.DirectDukascopyNoCache;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,10 +28,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.validation.Validator;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import static com.limemojito.trading.model.bar.Bar.Period.M5;
 import static com.limemojito.trading.model.tick.dukascopy.DukascopyUtils.setupValidator;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
@@ -68,6 +72,17 @@ public class TickToBarInputStreamTest {
         }
 
         verify(tickInputStream).close();
+    }
+
+    @Test
+    public void shouldNotProduceABarForEmptyTicks() throws Exception {
+        String path = "EURUSD/2018/11/30/19h_ticks.bi5";
+        try (DukascopyTickInputStream ticks = new DukascopyTickInputStream(VALIDATOR,
+                                                                           new DirectDukascopyNoCache(),
+                                                                           path);
+             TickToBarInputStream barStream = new TickToBarInputStream(VALIDATOR, M5, ticks)) {
+            assertThat(barStream.hasNext()).isFalse();
+        }
     }
 
     private TickToBarInputStream create() {

@@ -30,7 +30,9 @@ import org.junit.jupiter.api.Test;
 import javax.validation.Validator;
 import java.io.IOException;
 import java.time.Instant;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import static com.limemojito.trading.model.bar.Bar.Period.H1;
 import static com.limemojito.trading.model.bar.Bar.Period.H4;
@@ -94,6 +96,62 @@ public class DukascopySearchTest {
                                                                      },
                                                                      tick -> {
                                                                      }));
+    }
+
+    @Test
+    public void shouldAggregateAcrossNoDataSpans() throws Exception {
+        try (TradingInputStream<Bar> eurusd = search.aggregateFromTicks("EURUSD",
+                                                                        H1,
+                                                                        Instant.parse("2018-12-31T00:00:00Z"),
+                                                                        Instant.parse("2019-01-01T10:00:00Z"))) {
+            AtomicInteger count = new AtomicInteger();
+            eurusd.forEach(bar -> {
+                log.info("Found bar @ {}", bar.getStartInstant());
+                count.incrementAndGet();
+            });
+            assertThat(count.get()).isEqualTo(23);
+        }
+    }
+
+  /*  @Test
+    public void shouldBarCountBackwards() throws Exception {
+        int expectedBarCount = 100;
+        try (TradingInputStream<Bar> stream = search.aggregateFromTicks("EURUSD",
+                                                                        H1,
+                                                                        expectedBarCount,
+                                                                        Instant.parse("2019-01-02T00:59:59Z"))) {
+            assertThat(stream.stream().count()).isEqualTo(expectedBarCount);
+        }
+    }*/
+
+    @Test
+    public void shouldBarCountForwards() throws Exception {
+        int expectedBarCount = 10;
+        List<Bar> bars;
+        try (TradingInputStream<Bar> stream = search.aggregateFromTicks("EURUSD",
+                                                                        H1,
+                                                                        Instant.parse("2019-01-04T18:00:00Z"),
+                                                                        expectedBarCount)) {
+            bars = stream.stream().collect(Collectors.toList());
+        }
+        assertThat(bars).hasSize(expectedBarCount);
+        // this has run over a weekend gap
+        assertThat(bars.get(0).getStartInstant()).isEqualTo("2019-01-04T18:00:00Z");
+        assertThat(bars.get(expectedBarCount - 1).getStartInstant()).isEqualTo("2019-01-07T03:00:00Z");
+        assertThat(bars.get(expectedBarCount - 1).getStartInstant()).isEqualTo("2019-01-07T03:00:00Z");
+    }
+
+    @Test
+    public void shouldCountForwardsWithBarVisitor() throws Exception {
+        int expectedBarCount = 5;
+        try (TradingInputStream<Bar> stream = search.aggregateFromTicks("EURUSD",
+                                                                        H1,
+                                                                        Instant.parse("2019-04-08T13:00:00Z"),
+                                                                        expectedBarCount,
+                                                                        bar -> log.info("Visited {}", bar))) {
+            assertThat(stream.stream().count()).isEqualTo(expectedBarCount);
+        }
+
     }
 
     @Test

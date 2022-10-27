@@ -71,11 +71,11 @@ public class DukascopySearch implements TradingSearch {
                                                      new DukascopyPathGenerator());
         final String symbol = args[0];
         final Bar.Period period = Bar.Period.valueOf(args[1]);
-        final Instant startDate = Instant.parse(args[2]);
+        final Instant startTime = Instant.parse(args[2]);
         final Instant endTime = Instant.parse(args[3]);
         final int initialSize = 32 * 1024;
         final StringWriter stringWriter = new StringWriter(initialSize);
-        try (TradingInputStream<Bar> ticks = search.aggregateFromTicks(symbol, period, startDate, endTime);
+        try (TradingInputStream<Bar> ticks = search.aggregateFromTicks(symbol, period, startTime, endTime);
              BarInputStreamToCsv barCsv = new BarInputStreamToCsv(ticks, stringWriter)) {
             barCsv.convert();
         }
@@ -84,24 +84,26 @@ public class DukascopySearch implements TradingSearch {
     }
 
     @Override
-    public TradingInputStream<Tick> search(String symbol, Instant startDate, Instant endTime, TickVisitor tickVisitor) {
-        assertStart(startDate);
-        final List<String> paths = pathGenerator.generatePaths(symbol, startDate, endTime);
-        return generateTickInputStreamFrom(new Criteria(symbol, startDate, endTime), paths, tickVisitor);
+    public TradingInputStream<Tick> search(String symbol, Instant startTime, Instant endTime, TickVisitor tickVisitor) {
+        assertStart(startTime);
+        final List<String> paths = pathGenerator.generatePaths(symbol, startTime, endTime);
+        return generateTickInputStreamFrom(new Criteria(symbol, startTime, endTime), paths, tickVisitor);
     }
 
     @Override
     public TradingInputStream<Bar> aggregateFromTicks(String symbol,
                                                       Bar.Period period,
-                                                      Instant startDate,
+                                                      Instant startTime,
                                                       Instant endTime,
-                                                      BarVisitor barVisitor, TickVisitor tickVisitor) {
-        assertStart(startDate);
+                                                      BarVisitor barVisitor,
+                                                      TickVisitor tickVisitor) {
+        assertStart(startTime);
+        log.debug("Forming bar stream for {} {} {} -> {}", symbol, period, startTime, endTime);
         final List<TradingInputStream<Bar>> barInputStreams = new LinkedList<>();
-        final List<List<String>> groupedPaths = pathGenerator.generatePathsGroupedByDay(symbol, startDate, endTime);
+        final List<List<String>> groupedPaths = pathGenerator.generatePathsGroupedByDay(symbol, startTime, endTime);
         for (List<String> dayOfPaths : groupedPaths) {
             final TradingInputStream<Tick> dayOfTicks = generateTickInputStreamFrom(new Criteria(symbol,
-                                                                                                 startDate,
+                                                                                                 startTime,
                                                                                                  endTime),
                                                                                     dayOfPaths, tickVisitor);
             final TradingInputStream<Bar> oneDayOfBarStream = new TickToBarInputStream(validator,
@@ -110,10 +112,21 @@ public class DukascopySearch implements TradingSearch {
                                                                                        dayOfTicks);
             barInputStreams.add(oneDayOfBarStream);
         }
-        log.info("Returning bar stream for {} {} {} -> {}", symbol, period, startDate, endTime);
+        log.info("Returning bar stream for {} {} {} -> {}", symbol, period, startTime, endTime);
         return TradingInputStream.combine(barInputStreams.iterator(),
-                                          bar -> bar.getStartInstant().compareTo(startDate) >= 0
+                                          bar -> bar.getStartInstant().compareTo(startTime) >= 0
                                                   && bar.getStartInstant().compareTo(endTime) <= 0);
+    }
+
+    @Override
+    public TradingInputStream<Bar> aggregateFromTicks(String symbol,
+                                                      Bar.Period period,
+                                                      int barCountBefore,
+                                                      Instant endTime,
+                                                      BarVisitor barVisitor,
+                                                      TickVisitor tickVisitor) throws IOException {
+        //TODO
+        throw new IllegalStateException("Unsupported");
     }
 
     private void assertStart(Instant startTime) {
@@ -138,7 +151,7 @@ public class DukascopySearch implements TradingSearch {
                 return new DukascopyTickInputStream(validator, cache, pathIterator.next(), tickVisitor);
             }
         };
-        log.info("Returning tick stream for {} {} -> {}", criteria.symbol, criteria.start, criteria.end);
+        log.info("Returning tick stream for {} {} -> {}", criteria.symbol, paths.get(0), paths.get(paths.size() - 1));
         return TradingInputStream.combine(tickStreamIterator, tick -> filterAgainst(criteria, tick));
     }
 
