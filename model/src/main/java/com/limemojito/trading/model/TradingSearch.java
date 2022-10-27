@@ -200,12 +200,20 @@ public interface TradingSearch {
      * @throws IOException on a data failure.
      * @see #getTheBeginningOfTime()
      */
-    TradingInputStream<Bar> aggregateFromTicks(String symbol,
-                                               Bar.Period period,
-                                               int barCountBefore,
-                                               Instant endTime,
-                                               BarVisitor barVisitor,
-                                               TickVisitor tickVisitor) throws IOException;
+    default TradingInputStream<Bar> aggregateFromTicks(String symbol,
+                                                       Bar.Period period,
+                                                       int barCountBefore,
+                                                       Instant endTime,
+                                                       BarVisitor barVisitor,
+                                                       TickVisitor tickVisitor) throws IOException {
+        return TradingInputStreamBackwardsExtender.extend(symbol,
+                                                          period,
+                                                          barCountBefore,
+                                                          endTime,
+                                                          barVisitor,
+                                                          tickVisitor,
+                                                          this);
+    }
 
     /**
      * Retrieve a steam of bars by aggregating ticks, limited count forwards in time.
@@ -249,7 +257,7 @@ public interface TradingSearch {
                                   period,
                                   startTime,
                                   barCountAfter,
-                                  BarVisitor.NO_VISITOR,
+                                  barVisitor,
                                   TickVisitor.NO_VISITOR);
     }
 
@@ -271,12 +279,12 @@ public interface TradingSearch {
                                                        int barCountAfter,
                                                        BarVisitor barVisitor,
                                                        TickVisitor tickVisitor) throws IOException {
-        return TradingInputForwardStreamExtender.extend(symbol,
-                                                        period,
-                                                        startTime,
-                                                        barCountAfter,
-                                                        barVisitor,
-                                                        tickVisitor,
-                                                        this);
+        return TradingInputStreamForwardsExtender.extend(symbol,
+                                                         period,
+                                                         startTime,
+                                                         barCountAfter,
+                                                         barVisitor,
+                                                         tickVisitor,
+                                                         this);
     }
 }

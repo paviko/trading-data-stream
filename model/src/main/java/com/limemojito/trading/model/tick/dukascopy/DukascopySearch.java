@@ -118,17 +118,6 @@ public class DukascopySearch implements TradingSearch {
                                                   && bar.getStartInstant().compareTo(endTime) <= 0);
     }
 
-    @Override
-    public TradingInputStream<Bar> aggregateFromTicks(String symbol,
-                                                      Bar.Period period,
-                                                      int barCountBefore,
-                                                      Instant endTime,
-                                                      BarVisitor barVisitor,
-                                                      TickVisitor tickVisitor) throws IOException {
-        //TODO
-        throw new IllegalStateException("Unsupported");
-    }
-
     private void assertStart(Instant startTime) {
         if (theBeginningOfTime.isAfter(startTime)) {
             throw new IllegalArgumentException(String.format("Start %s must be before %s", startTime,

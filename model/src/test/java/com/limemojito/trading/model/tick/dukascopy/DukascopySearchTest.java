@@ -113,17 +113,6 @@ public class DukascopySearchTest {
         }
     }
 
-  /*  @Test
-    public void shouldBarCountBackwards() throws Exception {
-        int expectedBarCount = 100;
-        try (TradingInputStream<Bar> stream = search.aggregateFromTicks("EURUSD",
-                                                                        H1,
-                                                                        expectedBarCount,
-                                                                        Instant.parse("2019-01-02T00:59:59Z"))) {
-            assertThat(stream.stream().count()).isEqualTo(expectedBarCount);
-        }
-    }*/
-
     @Test
     public void shouldBarCountForwards() throws Exception {
         int expectedBarCount = 10;
@@ -142,6 +131,49 @@ public class DukascopySearchTest {
     }
 
     @Test
+    public void shouldBarCountBackwardsThroughAWeekend() throws Exception {
+        int expectedBarCount = 10;
+        try (TradingInputStream<Bar> stream = search.aggregateFromTicks("EURUSD",
+                                                                        H1,
+                                                                        expectedBarCount,
+                                                                        Instant.parse("2019-06-17T01:59:59Z"))) {
+            List<Bar> data = stream.stream().collect(Collectors.toList());
+            data.forEach(bar -> log.info("Found bar @ {}", bar.getStartInstant()));
+            assertThat(data.size()).isEqualTo(expectedBarCount);
+            assertThat(data.get(0).getStartInstant()).isEqualTo("2019-06-14T16:00:00Z");
+            assertThat(data.get(expectedBarCount - 1).getStartInstant()).isEqualTo("2019-06-17T01:00:00Z");
+        }
+    }
+
+    @Test
+    public void shouldStopAtTheBeginningOfTime() throws Exception {
+        int expectedBarCount = 5;
+        List<Bar> bars;
+        try (TradingInputStream<Bar> stream = search.aggregateFromTicks("EURUSD",
+                                                                        H1,
+                                                                        100,
+                                                                        Instant.parse("2010-01-01T05:00:00Z"))) {
+            bars = stream.stream().collect(Collectors.toList());
+        }
+        assertThat(bars).hasSize(expectedBarCount);
+        // this has run over a weekend gap
+        assertThat(bars.get(0).getStartInstant()).isEqualTo("2010-01-01T00:00:00Z");
+        assertThat(bars.get(expectedBarCount - 1).getStartInstant()).isEqualTo("2010-01-01T04:00:00Z");
+    }
+
+    @Test
+    public void shouldCountBackwardsWithBarVisitor() throws Exception {
+        int expectedBarCount = 5;
+        try (TradingInputStream<Bar> stream = search.aggregateFromTicks("EURUSD",
+                                                                        H1,
+                                                                        expectedBarCount,
+                                                                        Instant.parse("2019-04-08T18:00:00Z"),
+                                                                        bar -> log.info("Visited {}", bar))) {
+            assertThat(stream.stream().count()).isEqualTo(expectedBarCount);
+        }
+    }
+
+    @Test
     public void shouldCountForwardsWithBarVisitor() throws Exception {
         int expectedBarCount = 5;
         try (TradingInputStream<Bar> stream = search.aggregateFromTicks("EURUSD",
@@ -151,7 +183,6 @@ public class DukascopySearchTest {
                                                                         bar -> log.info("Visited {}", bar))) {
             assertThat(stream.stream().count()).isEqualTo(expectedBarCount);
         }
-
     }
 
     @Test

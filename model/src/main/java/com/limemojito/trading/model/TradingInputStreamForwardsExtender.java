@@ -29,7 +29,7 @@ import java.time.Instant;
 import java.util.NoSuchElementException;
 
 @Slf4j
-public final class TradingInputForwardStreamExtender<Model> implements TradingInputStream<Model> {
+public final class TradingInputStreamForwardsExtender<Model> implements TradingInputStream<Model> {
     private final int maxCount;
     private final Search<Model> search;
     private int searchCount;
@@ -43,7 +43,7 @@ public final class TradingInputForwardStreamExtender<Model> implements TradingIn
                                                  BarVisitor barVisitor,
                                                  TickVisitor tickVisitor,
                                                  TradingSearch tradingSearch) throws IOException {
-        return new TradingInputForwardStreamExtender<>(barCountAfter, (searchCount) -> {
+        return new TradingInputStreamForwardsExtender<>(barCountAfter, (searchCount) -> {
             final Duration duration = period.getDuration().multipliedBy(barCountAfter);
             final Instant start = startTime.plus(duration.multipliedBy(searchCount));
             final Instant end = startTime.plus(duration.multipliedBy(searchCount + 1))
@@ -57,7 +57,7 @@ public final class TradingInputForwardStreamExtender<Model> implements TradingIn
         });
     }
 
-    private TradingInputForwardStreamExtender(int maxCount, Search<Model> search) throws IOException {
+    private TradingInputStreamForwardsExtender(int maxCount, Search<Model> search) throws IOException {
         this.maxCount = maxCount;
         this.search = search;
         this.dataStream = search.perform(0);
