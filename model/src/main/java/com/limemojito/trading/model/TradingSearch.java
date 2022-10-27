@@ -30,16 +30,16 @@ public interface TradingSearch {
     /**
      * Sets the limit of searching.
      *
-     * @param beginningOfTime past this point searches will end data.
+     * @param theBeginningOfTime past this point searches will end data.
      */
-    void setBeginningOfTime(Instant beginningOfTime);
+    void setTheBeginningOfTime(Instant theBeginningOfTime);
 
     /**
      * Gets the limit of searching.
      *
      * @return The point where searches past will stop
      */
-    Instant getBeginningOfTime();
+    Instant getTheBeginningOfTime();
 
     /**
      * Retrieve a steam of ticks.
@@ -50,7 +50,7 @@ public interface TradingSearch {
      * @return Tick data matching the search request.
      * @throws IOException              on a data failure.
      * @throws IllegalArgumentException if the start time is < the beginningOfTime.
-     * @see #getBeginningOfTime()
+     * @see #getTheBeginningOfTime()
      */
     default TradingInputStream<Tick> search(String symbol,
                                             Instant startTime,
@@ -68,7 +68,7 @@ public interface TradingSearch {
      * @return Tick data matching the search request.
      * @throws IOException              on a data failure.
      * @throws IllegalArgumentException if the start time is < the beginningOfTime.
-     * @see #getBeginningOfTime()
+     * @see #getTheBeginningOfTime()
      */
     TradingInputStream<Tick> search(String symbol,
                                     Instant startTime,
@@ -85,7 +85,7 @@ public interface TradingSearch {
      * @return Bar data matching the search request.
      * @throws IOException              on a data failure.
      * @throws IllegalArgumentException if the start time is < the beginningOfTime.
-     * @see #getBeginningOfTime()
+     * @see #getTheBeginningOfTime()
      */
     default TradingInputStream<Bar> aggregateFromTicks(String symbol,
                                                        Bar.Period period,
@@ -105,7 +105,7 @@ public interface TradingSearch {
      * @return Bar data matching the search request.
      * @throws IOException              on a data failure.
      * @throws IllegalArgumentException if the start time is < the beginningOfTime.
-     * @see #getBeginningOfTime()
+     * @see #getTheBeginningOfTime()
      */
     default TradingInputStream<Bar> aggregateFromTicks(String symbol,
                                                        Bar.Period period,
@@ -127,7 +127,7 @@ public interface TradingSearch {
      * @return Bar data matching the search request.
      * @throws IOException              on a data failure.
      * @throws IllegalArgumentException if the start time is < the beginningOfTime.
-     * @see #getBeginningOfTime()
+     * @see #getTheBeginningOfTime()
      */
     TradingInputStream<Bar> aggregateFromTicks(String symbol,
                                                Bar.Period period,

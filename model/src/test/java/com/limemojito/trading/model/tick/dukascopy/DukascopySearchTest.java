@@ -57,9 +57,9 @@ public class DukascopySearchTest {
     @Test
     @SuppressWarnings("resource")
     public void shouldFailIfEndPastTheBeginningOfTime() {
-        assertThat(search.getBeginningOfTime()).isEqualTo("2010-01-01T00:00:00Z");
-        search.setBeginningOfTime(Instant.parse("2018-01-01T00:00:00Z"));
-        assertThat(search.getBeginningOfTime()).isEqualTo("2018-01-01T00:00:00Z");
+        assertThat(search.getTheBeginningOfTime()).isEqualTo("2010-01-01T00:00:00Z");
+        search.setTheBeginningOfTime(Instant.parse("2018-01-01T00:00:00Z"));
+        assertThat(search.getTheBeginningOfTime()).isEqualTo("2018-01-01T00:00:00Z");
         Instant start = Instant.parse("2009-01-02T00:59:59Z");
         Instant end = Instant.parse("2020-01-02T00:00:00Z");
         String expectedMessage = "Start 2009-01-02T00:59:59Z must be before 2018-01-01T00:00:00Z";

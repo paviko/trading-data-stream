@@ -52,7 +52,7 @@ public class DukascopySearch implements TradingSearch {
     public static final String DEFAULT_BEGINNING_OF_TIME = "2010-01-01T00:00:00Z";
     @Setter
     @Getter
-    private Instant beginningOfTime = Instant.parse(DEFAULT_BEGINNING_OF_TIME);
+    private Instant theBeginningOfTime = Instant.parse(DEFAULT_BEGINNING_OF_TIME);
     private final Validator validator;
     private final DukascopyCache cache;
     private final DukascopyPathGenerator pathGenerator;
@@ -117,8 +117,9 @@ public class DukascopySearch implements TradingSearch {
     }
 
     private void assertStart(Instant startTime) {
-        if (beginningOfTime.isAfter(startTime)) {
-            throw new IllegalArgumentException(String.format("Start %s must be before %s", startTime, beginningOfTime));
+        if (theBeginningOfTime.isAfter(startTime)) {
+            throw new IllegalArgumentException(String.format("Start %s must be before %s", startTime,
+                                                             theBeginningOfTime));
         }
     }
 
