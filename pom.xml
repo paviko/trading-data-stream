@@ -20,7 +20,7 @@
 
     <groupId>com.limemojito.oss.trading.trading-data-stream</groupId>
     <artifactId>trading-data-stream</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <parent>
@@ -48,8 +48,4 @@
         <module>model</module>
         <module>example-cli</module>
     </modules>
-
-  <scm>
-    <tag>trading-data-stream-1.1.0</tag>
-  </scm>
 </project>
