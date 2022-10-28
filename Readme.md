@@ -10,11 +10,30 @@ Library
 <dependency>
     <groupId>com.limemojito.oss.trading.trading-data-stream</groupId>
     <artifactId>model</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
 </dependency>
 ```
 Check out the source to see a working example in example-cli (Spring Boot command line).
 
+---
+# Changes
+
+## 1.1.0
+* Stop searches at the Beginning of Time - arbitrarily defaulted to be 2010-01-01T00:00:00Z.
+* Allow configuration of the Beginning of Time.
+* Aggregate for a number of bars before a given instant.
+* Aggregate for a number of bars after a given instant.
+
+## 1.0.0
+* Initial release to open source.  
+* Search ticks by symbol, time range, 
+* Aggregate bars by time range.
+* Convert models (Tick, Bar) to csv.
+* Cache dukascopy files Direct No Cache, Local Cache and S3 Cache.
+* Combine caches into cache chains such as Local -> S3 -> Direct.
+* Example CLI
+
+---
 # Quickstart
 
 ```
@@ -28,7 +47,7 @@ NZDUSD M5 bars for 2018-01-02T00:00:00Z -> 2018-01-02T00:59:59Z as CSV.
 *note* that files are cached locally in ~/.dukascopy-cache. See LocalDukascopyCache.java for details.
 
 ```
-java -jar example-cli/target/example-cli-1.0.0-SNAPSHOT.jar --symbol=NZDUSD --period=M5 \
+java -jar example-cli/target/example-cli-1.1.0-SNAPSHOT.jar --symbol=NZDUSD --period=M5 \
   --start=2018-01-02T00:00:00Z --end=2018-01-02T00:59:59Z --output=test-nz.csv  
 ```
 
@@ -39,13 +58,12 @@ See S3DukascopyCache.java and the chain configuration in DataStreamCli.java for 
 
 ```
 aws s3 mb s3://test-tick-bucket
-java -jar example-cli/target/example-cli-1.0.0-SNAPSHOT.jar  --spring.profiles.active=s3 \
+java -jar example-cli/target/example-cli-1.1.0-SNAPSHOT.jar  --spring.profiles.active=s3 \
   --bucket-name=test-tick-bucket --symbol=AUDUSD --period=M5 --start=2018-01-02T00:00:00Z \
   --end=2018-01-02T00:59:59Z --output=test-au.csv  
 ```
 
 ---
-
 # Implementation notes
 
 Times are supplied in UTC as this matches the Dukascopy epoch data.

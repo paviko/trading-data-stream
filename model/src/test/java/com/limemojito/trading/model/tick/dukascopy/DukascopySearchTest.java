@@ -23,13 +23,16 @@ import com.limemojito.trading.model.tick.Tick;
 import com.limemojito.trading.model.tick.dukascopy.cache.DirectDukascopyNoCache;
 import com.limemojito.trading.model.tick.dukascopy.cache.LocalDukascopyCache;
 import lombok.extern.slf4j.Slf4j;
+import org.assertj.core.api.ThrowableAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.validation.Validator;
 import java.io.IOException;
 import java.time.Instant;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import static com.limemojito.trading.model.bar.Bar.Period.H1;
 import static com.limemojito.trading.model.bar.Bar.Period.H4;
@@ -38,6 +41,7 @@ import static com.limemojito.trading.model.bar.Bar.Period.M30;
 import static com.limemojito.trading.model.bar.Bar.Period.M5;
 import static com.limemojito.trading.model.tick.dukascopy.DukascopyUtils.setupValidator;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @Slf4j
 public class DukascopySearchTest {
@@ -50,6 +54,135 @@ public class DukascopySearchTest {
         DukascopyCache cacheChain = new LocalDukascopyCache(new DirectDukascopyNoCache());
         DukascopyPathGenerator pathGenerator = new DukascopyPathGenerator();
         search = new DukascopySearch(VALIDATOR, cacheChain, pathGenerator);
+    }
+
+    @Test
+    @SuppressWarnings("resource")
+    public void shouldFailIfEndPastTheBeginningOfTime() {
+        assertThat(search.getTheBeginningOfTime()).isEqualTo("2010-01-01T00:00:00Z");
+        search.setTheBeginningOfTime(Instant.parse("2018-01-01T00:00:00Z"));
+        assertThat(search.getTheBeginningOfTime()).isEqualTo("2018-01-01T00:00:00Z");
+        Instant start = Instant.parse("2009-01-02T00:59:59Z");
+        Instant end = Instant.parse("2020-01-02T00:00:00Z");
+        String expectedMessage = "Start 2009-01-02T00:59:59Z must be before 2018-01-01T00:00:00Z";
+        assertPastTheBeginningOfTime(expectedMessage,
+                                     () -> search.search("EURUSD",
+                                                         start,
+                                                         end));
+        assertPastTheBeginningOfTime(expectedMessage,
+                                     () -> search.search("AUDUSD",
+                                                         start,
+                                                         end,
+                                                         tick -> {
+                                                         }));
+        assertPastTheBeginningOfTime(expectedMessage,
+                                     () -> search.aggregateFromTicks("USDJPY",
+                                                                     H1,
+                                                                     start,
+                                                                     end));
+        assertPastTheBeginningOfTime(expectedMessage,
+                                     () -> search.aggregateFromTicks("AUDUSD",
+                                                                     H1,
+                                                                     start,
+                                                                     end,
+                                                                     bar -> {
+                                                                     }));
+        assertPastTheBeginningOfTime(expectedMessage,
+                                     () -> search.aggregateFromTicks("EURUSD",
+                                                                     H1,
+                                                                     start,
+                                                                     end,
+                                                                     bar -> {
+                                                                     },
+                                                                     tick -> {
+                                                                     }));
+    }
+
+    @Test
+    public void shouldAggregateAcrossNoDataSpans() throws Exception {
+        try (TradingInputStream<Bar> eurusd = search.aggregateFromTicks("EURUSD",
+                                                                        H1,
+                                                                        Instant.parse("2018-12-31T00:00:00Z"),
+                                                                        Instant.parse("2019-01-01T10:00:00Z"))) {
+            AtomicInteger count = new AtomicInteger();
+            eurusd.forEach(bar -> {
+                log.info("Found bar @ {}", bar.getStartInstant());
+                count.incrementAndGet();
+            });
+            assertThat(count.get()).isEqualTo(23);
+        }
+    }
+
+    @Test
+    public void shouldBarCountForwards() throws Exception {
+        int expectedBarCount = 10;
+        List<Bar> bars;
+        try (TradingInputStream<Bar> stream = search.aggregateFromTicks("EURUSD",
+                                                                        H1,
+                                                                        Instant.parse("2019-01-04T18:00:00Z"),
+                                                                        expectedBarCount)) {
+            bars = stream.stream().collect(Collectors.toList());
+        }
+        assertThat(bars).hasSize(expectedBarCount);
+        // this has run over a weekend gap
+        assertThat(bars.get(0).getStartInstant()).isEqualTo("2019-01-04T18:00:00Z");
+        assertThat(bars.get(expectedBarCount - 1).getStartInstant()).isEqualTo("2019-01-07T03:00:00Z");
+        assertThat(bars.get(expectedBarCount - 1).getStartInstant()).isEqualTo("2019-01-07T03:00:00Z");
+    }
+
+    @Test
+    public void shouldBarCountBackwardsThroughAWeekend() throws Exception {
+        int expectedBarCount = 10;
+        try (TradingInputStream<Bar> stream = search.aggregateFromTicks("EURUSD",
+                                                                        H1,
+                                                                        expectedBarCount,
+                                                                        Instant.parse("2019-06-17T01:59:59Z"))) {
+            List<Bar> data = stream.stream().collect(Collectors.toList());
+            data.forEach(bar -> log.info("Found bar @ {}", bar.getStartInstant()));
+            assertThat(data.size()).isEqualTo(expectedBarCount);
+            assertThat(data.get(0).getStartInstant()).isEqualTo("2019-06-14T16:00:00Z");
+            assertThat(data.get(expectedBarCount - 1).getStartInstant()).isEqualTo("2019-06-17T01:00:00Z");
+        }
+    }
+
+    @Test
+    public void shouldStopAtTheBeginningOfTime() throws Exception {
+        int expectedBarCount = 5;
+        List<Bar> bars;
+        try (TradingInputStream<Bar> stream = search.aggregateFromTicks("EURUSD",
+                                                                        H1,
+                                                                        100,
+                                                                        Instant.parse("2010-01-01T05:00:00Z"))) {
+            bars = stream.stream().collect(Collectors.toList());
+        }
+        assertThat(bars).hasSize(expectedBarCount);
+        // this has run over a weekend gap
+        assertThat(bars.get(0).getStartInstant()).isEqualTo("2010-01-01T00:00:00Z");
+        assertThat(bars.get(expectedBarCount - 1).getStartInstant()).isEqualTo("2010-01-01T04:00:00Z");
+    }
+
+    @Test
+    public void shouldCountBackwardsWithBarVisitor() throws Exception {
+        int expectedBarCount = 5;
+        try (TradingInputStream<Bar> stream = search.aggregateFromTicks("EURUSD",
+                                                                        H1,
+                                                                        expectedBarCount,
+                                                                        Instant.parse("2019-04-08T18:00:00Z"),
+                                                                        bar -> log.info("Visited {}", bar))) {
+            assertThat(stream.stream().count()).isEqualTo(expectedBarCount);
+        }
+    }
+
+    @Test
+    public void shouldCountForwardsWithBarVisitor() throws Exception {
+        int expectedBarCount = 5;
+        try (TradingInputStream<Bar> stream = search.aggregateFromTicks("EURUSD",
+                                                                        H1,
+                                                                        Instant.parse("2019-04-08T13:00:00Z"),
+                                                                        expectedBarCount,
+                                                                        bar -> log.info("Visited {}", bar))) {
+            assertThat(stream.stream().count()).isEqualTo(expectedBarCount);
+        }
     }
 
     @Test
@@ -122,4 +255,9 @@ public class DukascopySearchTest {
         }
     }
 
+    private static void assertPastTheBeginningOfTime(String expectedMessage, ThrowableAssert.ThrowingCallable method) {
+        assertThatThrownBy(method)
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage(expectedMessage);
+    }
 }
