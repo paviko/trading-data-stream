@@ -10,7 +10,7 @@ Library
 <dependency>
     <groupId>com.limemojito.oss.trading.trading-data-stream</groupId>
     <artifactId>model</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.0-SNAPSHOT</version>
 </dependency>
 ```
 Check out the source to see a working example in example-cli (Spring Boot command line).
@@ -18,7 +18,7 @@ Check out the source to see a working example in example-cli (Spring Boot comman
 ---
 # Changes
 
-## 1.1.0
+## 1.1.0-SNAPSHOT
 * Stop searches at the Beginning of Time - arbitrarily defaulted to be 2010-01-01T00:00:00Z.
 * Allow configuration of the Beginning of Time.
 * Aggregate for a number of bars before a given instant.
