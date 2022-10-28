@@ -15,6 +15,25 @@ Library
 ```
 Check out the source to see a working example in example-cli (Spring Boot command line).
 
+---
+# Changes
+
+## 1.1.0
+* Stop searches at the Beginning of Time - arbitrarily defaulted to be 2010-01-01T00:00:00Z.
+* Allow configuration of the Beginning of Time.
+* Aggregate for a number of bars before a given instant.
+* Aggregate for a number of bars after a given instant.
+
+## 1.0.0
+* Initial release to open source.  
+* Search ticks by symbol, time range, 
+* Aggregate bars by time range.
+* Convert models (Tick, Bar) to csv.
+* Cache dukascopy files Direct No Cache, Local Cache and S3 Cache.
+* Combine caches into cache chains such as Local -> S3 -> Direct.
+* Example CLI
+
+---
 # Quickstart
 
 ```
@@ -45,7 +64,6 @@ java -jar example-cli/target/example-cli-1.1.0-SNAPSHOT.jar  --spring.profiles.a
 ```
 
 ---
-
 # Implementation notes
 
 Times are supplied in UTC as this matches the Dukascopy epoch data.
