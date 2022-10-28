@@ -74,7 +74,7 @@ public abstract class FallbackDukascopyCache implements DukascopyCache {
                              getRetrieveCount(),
                              getHitCount(),
                              getMissCount(),
-                             (getHitCount() / (double) getRetrieveCount()) * toPercent,
+                             getRetrieveCount() > 0 ? (getHitCount() / (double) getRetrieveCount()) * toPercent : 0,
                              fallback.cacheStats());
     }
 

@@ -10,7 +10,7 @@ Library
 <dependency>
     <groupId>com.limemojito.oss.trading.trading-data-stream</groupId>
     <artifactId>model</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
 </dependency>
 ```
 Check out the source to see a working example in example-cli (Spring Boot command line).
@@ -28,7 +28,7 @@ NZDUSD M5 bars for 2018-01-02T00:00:00Z -> 2018-01-02T00:59:59Z as CSV.
 *note* that files are cached locally in ~/.dukascopy-cache. See LocalDukascopyCache.java for details.
 
 ```
-java -jar example-cli/target/example-cli-1.0.0-SNAPSHOT.jar --symbol=NZDUSD --period=M5 \
+java -jar example-cli/target/example-cli-1.1.0-SNAPSHOT.jar --symbol=NZDUSD --period=M5 \
   --start=2018-01-02T00:00:00Z --end=2018-01-02T00:59:59Z --output=test-nz.csv  
 ```
 
@@ -39,7 +39,7 @@ See S3DukascopyCache.java and the chain configuration in DataStreamCli.java for 
 
 ```
 aws s3 mb s3://test-tick-bucket
-java -jar example-cli/target/example-cli-1.0.0-SNAPSHOT.jar  --spring.profiles.active=s3 \
+java -jar example-cli/target/example-cli-1.1.0-SNAPSHOT.jar  --spring.profiles.active=s3 \
   --bucket-name=test-tick-bucket --symbol=AUDUSD --period=M5 --start=2018-01-02T00:00:00Z \
   --end=2018-01-02T00:59:59Z --output=test-au.csv  
 ```
