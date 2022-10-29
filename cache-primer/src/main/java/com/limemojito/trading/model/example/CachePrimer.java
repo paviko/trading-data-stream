@@ -19,11 +19,10 @@ package com.limemojito.trading.model.example;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.limemojito.trading.model.TradingSearch;
 import com.limemojito.trading.model.tick.dukascopy.DukascopyCache;
 import com.limemojito.trading.model.tick.dukascopy.DukascopyPathGenerator;
-import com.limemojito.trading.model.tick.dukascopy.DukascopySearch;
 import com.limemojito.trading.model.tick.dukascopy.cache.DirectDukascopyNoCache;
+import com.limemojito.trading.model.tick.dukascopy.cache.DukascopyCachePrimer;
 import com.limemojito.trading.model.tick.dukascopy.cache.LocalDukascopyCache;
 import com.limemojito.trading.model.tick.dukascopy.cache.S3DukascopyCache;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,8 +31,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
-
-import javax.validation.Validator;
 
 @SpringBootApplication
 public class CachePrimer {
@@ -58,10 +55,10 @@ public class CachePrimer {
     @Profile("s3")
     @Bean
     @Primary
-    public DukascopyCache localS3Direct(AmazonS3 s3,
+    public DukascopyCache s3Direct(AmazonS3 s3,
                                         @Value("${bucket-name}") String bucketName,
                                         DirectDukascopyNoCache direct) {
-        return new LocalDukascopyCache(new S3DukascopyCache(s3, bucketName, direct));
+        return new S3DukascopyCache(s3, bucketName, new LocalDukascopyCache(direct));
     }
 
     /**
@@ -77,9 +74,14 @@ public class CachePrimer {
         return new LocalDukascopyCache(direct);
     }
 
+    @Bean(destroyMethod = "shutdown")
+    public DukascopyCachePrimer dukascopyCachePrimer(DukascopyCache cache, DukascopyPathGenerator pathGenerator) {
+        return new DukascopyCachePrimer(cache, pathGenerator);
+    }
+
     @Bean
-    public TradingSearch tradingSearch(Validator validator, DukascopyCache cache) {
-        return new DukascopySearch(validator, cache, new DukascopyPathGenerator());
+    public static DukascopyPathGenerator pathGenerator() {
+        return new DukascopyPathGenerator();
     }
 
     public static void main(String[] args) {

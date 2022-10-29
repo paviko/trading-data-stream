@@ -23,9 +23,9 @@ Check out the source to see a working example in example-cli (Spring Boot comman
 * Allow configuration of the Beginning of Time.
 * Aggregate for a number of bars before a given instant.
 * Aggregate for a number of bars after a given instant.
-* Dropped permit rate to 1.99 as occasional IO error in the US.
-* Added a cache primer application to test load limits (concurrent requests).
 * Added delayed n-retry with exponential backoff on Dukascopy IO failure.  Defaults to 3X and 2 second.
+* Upped the rate limit after discovering 500s are occasional errors on empty paths.
+* Added a cache primer application to test load limits (concurrent requests).
 
 ## 1.0.0
 * Initial release to open source.  
@@ -43,9 +43,9 @@ Check out the source to see a working example in example-cli (Spring Boot comman
 mvn clean install
 ```
 
-this produces the model jar and example-cli.
+this produces the model jar, example-cli and a cache primer application.
 
-NZDUSD M5 bars for 2018-01-02T00:00:00Z -> 2018-01-02T00:59:59Z as CSV.
+## NZDUSD M5 bars for 2018-01-02T00:00:00Z -> 2018-01-02T00:59:59Z as CSV.
 
 *note* that files are cached locally in ~/.dukascopy-cache. See LocalDukascopyCache.java for details.
 
@@ -54,17 +54,33 @@ java -jar example-cli/target/example-cli-1.1.0-SNAPSHOT.jar --symbol=NZDUSD --pe
   --start=2018-01-02T00:00:00Z --end=2018-01-02T00:59:59Z --output=test-nz.csv  
 ```
 
-AUDUSD M5 bars for 2018-01-02T00:00:00Z -> 2018-01-02T00:59:59Z as CSV with S3 cache.
+## AUDUSD M5 bars for 2018-01-02T00:00:00Z -> 2018-01-02T00:59:59Z as CSV with S3 cache.
 
-*note* that the S3 cache is only used if it is not cached locally (~/.dukascopy-cache).
+*note* this application cache chain is local <- s3 <- direct - ie the S3 cache is only used if it is not cached locally (~/.dukascopy-cache).
 See S3DukascopyCache.java and the chain configuration in DataStreamCli.java for details.
-
 ```
 aws s3 mb s3://test-tick-bucket
-java -jar example-cli/target/example-cli-1.1.0-SNAPSHOT.jar  --spring.profiles.active=s3 \
+java -jar example-cli/target/example-cli-1.1.0-SNAPSHOT.jar --spring.profiles.active=s3 \
   --bucket-name=test-tick-bucket --symbol=AUDUSD --period=M5 --start=2018-01-02T00:00:00Z \
   --end=2018-01-02T00:59:59Z --output=test-au.csv  
 ```
+   
+## Prime a local cache with AUDUSD and EURUSD 2 months
+```
+java -jar cache-primer/target/cache-primer-1.1.0-SNAPSHOT.jar --symbol=AUDUSD --symbol EURUSD \
+  --start=2018-01-01T00:00:00Z --end=2018-03-01T00:59:59Z  
+```
+
+## Prime a s3 cache with AUDUSD and EURUSD 2 months
+*note* this application cache chain is s3 <- local <- direct.
+See S3DukascopyCache.java and the chain configuration in CachePrimer.java for details.
+```
+aws s3 mb s3://test-tick-bucket
+java -jar cache-primer/target/cache-primer-1.1.0-SNAPSHOT.jar --spring.profiles.active=s3 \
+  --bucket-name=test-tick-bucket --symbol=AUDUSD --symbol EURUSD \
+  --start=2018-01-01T00:00:00Z --end=2018-03-01T00:59:59Z  
+```
+
 
 ---
 # Implementation notes

@@ -180,7 +180,7 @@ public class DukascopyTickInputStream implements TradingInputStream<Tick> {
             try {
                 delegate = new LZMACompressorInputStream(inputStream);
             } catch (EOFException e) {
-                log.warn("0 length file encountered");
+                log.debug("0 length file encountered");
             }
             readAttempted = true;
         }

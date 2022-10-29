@@ -42,7 +42,7 @@ import static java.lang.System.getProperty;
 @SuppressWarnings("UnstableApiUsage")
 public class DirectDukascopyNoCache implements DukascopyCache {
     /**
-     * Defaults to 1.99ps which plays nicely with Dukascopy.  Otherwise, they simply stop responding (500) if you hit the
+     * Defaults to 10.00ps which plays nicely with Dukascopy. Otherwise, they simply stop responding (500) if you hit the
      * servers too hard.
      */
     public static final String PROP_PERMITS = DirectDukascopyNoCache.class.getPackageName() + ".permits";
@@ -127,7 +127,7 @@ public class DirectDukascopyNoCache implements DukascopyCache {
             return new URL(url).openStream();
         }
 
-        public String toString(){
+        public String toString() {
             return url;
         }
     }

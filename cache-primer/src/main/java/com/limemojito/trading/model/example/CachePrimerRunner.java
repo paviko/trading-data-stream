@@ -17,21 +17,16 @@
 
 package com.limemojito.trading.model.example;
 
-import com.limemojito.trading.model.TradingInputStream;
-import com.limemojito.trading.model.TradingSearch;
-import com.limemojito.trading.model.bar.Bar;
-import com.limemojito.trading.model.bar.Bar.Period;
-import com.limemojito.trading.model.bar.BarInputStreamToCsv;
 import com.limemojito.trading.model.tick.dukascopy.DukascopyCache;
+import com.limemojito.trading.model.tick.dukascopy.cache.DukascopyCachePrimer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.time.Instant;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -39,19 +34,21 @@ import java.time.Instant;
 public class CachePrimerRunner implements ApplicationRunner {
 
     private final DukascopyCache cache;
-    private final DukascopyCacheLoader cacheLoader;
-
+    private final DukascopyCachePrimer cacheLoader;
 
     @Override
-    public void run(ApplicationArguments args) throws Exception {
-        String symbol = getRequiredValue(args, "symbol");
-        Period period = Period.valueOf(getRequiredValue(args, "period"));
+    public void run(ApplicationArguments args) {
+        List<String> symbols = getRequiredValues(args, "symbol");
         Instant start = getRequiredValueInstant(args, "start");
         Instant end = getRequiredValueInstant(args, "end");
-        log.info("Performing bar aggregation to CSV on {} {} {} -> {} => {}", symbol, period, start, end, outputFile);
-        cacheLoader.load(symbol, period, start, end);
+        log.info("Performing cache priming {} {} -> {}", symbols, start, end);
+        cacheLoader.newLoad();
+        for (String symbol : symbols) {
+            cacheLoader.load(symbol, start, end);
+        }
         cacheLoader.waitForCompletion();
         log.info(cache.cacheStats());
+        cacheLoader.shutdown();
     }
 
     private Instant getRequiredValueInstant(ApplicationArguments args, String name) {
@@ -59,9 +56,14 @@ public class CachePrimerRunner implements ApplicationRunner {
     }
 
     private static String getRequiredValue(ApplicationArguments args, String name) {
+        List<String> optionValues = getRequiredValues(args, name);
+        return optionValues.get(0);
+    }
+
+    private static List<String> getRequiredValues(ApplicationArguments args, String name) {
         if (!args.containsOption(name)) {
             throw new IllegalArgumentException("Missing command line argument --" + name + "=????");
         }
-        return args.getOptionValues(name).get(0);
+        return args.getOptionValues(name);
     }
 }
