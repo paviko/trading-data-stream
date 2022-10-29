@@ -58,7 +58,7 @@ public class DukascopyTickInputStreamTest {
         }
         assertThat(visitCounter.get()).isEqualTo(tickCount);
         assertThat(cache.getRetrieveCount()).isEqualTo(1);
-        assertThat(cache.cacheStats()).isEqualTo("DirectDukascopyNoCache: 1 retrieve(s)");
+        assertThat(cache.cacheStats()).isEqualTo("DirectDukascopyNoCache: 1 retrieve(s) 0 retry(s)");
         assertThat(cache.getHitCount()).isEqualTo(0);
         assertThat(cache.getMissCount()).isEqualTo(1);
     }

@@ -20,6 +20,7 @@ package com.limemojito.trading.model.tick.dukascopy.cache;
 import com.google.common.util.concurrent.RateLimiter;
 import com.limemojito.trading.model.tick.dukascopy.DukascopyCache;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedInputStream;
@@ -30,6 +31,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.google.common.util.concurrent.RateLimiter.create;
 import static java.lang.Double.parseDouble;
+import static java.lang.Integer.parseInt;
 import static java.lang.System.getProperty;
 
 /**
@@ -40,28 +42,46 @@ import static java.lang.System.getProperty;
 @SuppressWarnings("UnstableApiUsage")
 public class DirectDukascopyNoCache implements DukascopyCache {
     /**
-     * Defaults to 2ps which plays nicely with Dukascopy.  Otherwise, they simply stop responding (500) if you hit the
+     * Defaults to 1.99ps which plays nicely with Dukascopy.  Otherwise, they simply stop responding (500) if you hit the
      * servers too hard.
      */
     public static final String PROP_PERMITS = DirectDukascopyNoCache.class.getPackageName() + ".permits";
+
+    /**
+     * Defaults to 2.0 s to pause if a server 500 is encountered.  This may indicate that we are over rate.
+     * Exponential back-off over the number of retries.
+     *
+     * @see #PROP_RETRY_COUNT
+     */
+    public static final String PROP_RETRY = DirectDukascopyNoCache.class.getPackageName() + ".retrySeconds";
+
+    /**
+     * Defaults to 3 attempts (exponential backoff).
+     *
+     * @see #PROP_RETRY
+     */
+    public static final String PROP_RETRY_COUNT = DirectDukascopyNoCache.class.getPackageName() + ".retryCount";
+
     /**
      * Defaults to <a href="https://datafeed.dukascopy.com/datafeed/">...</a> which plays nicely with Dukascopy.  Otherwise, they simply stop
      * responding if you hit the servers too hard.  Note the slash on the end is required.
      */
     public static final String PROP_URL = DirectDukascopyNoCache.class.getPackageName() + ".url";
-    private static final double PERMITS_PER_SECOND = parseDouble(getProperty(PROP_PERMITS, "2.0"));
-    private static final RateLimiter RATE_LIMITER = create(PERMITS_PER_SECOND);
 
+    private static final double PERMITS_PER_SECOND = parseDouble(getProperty(PROP_PERMITS, "10"));
+    private static final double PAUSE_SECONDS = parseDouble(getProperty(PROP_RETRY, "1.0"));
+    private static final int RETRY_COUNT = parseInt(getProperty(PROP_RETRY_COUNT, "3"));
+    private static final RateLimiter RATE_LIMITER = create(PERMITS_PER_SECOND);
     private static final String DUKASCOPY_URL = getProperty(PROP_URL, "https://datafeed.dukascopy.com/datafeed/");
+    private static final int IO_BUFFER_SIZE = 32 * 1024;
+    private final AtomicInteger retryCounter = new AtomicInteger();
     private final AtomicInteger retrievePathCounter = new AtomicInteger();
 
     @Override
     public InputStream stream(String dukascopyPath) throws IOException {
+        final DataSource url = new UrlDataSource(DUKASCOPY_URL + dukascopyPath);
         // play nice with Dukascopy's free data.  And if you don't they stop sending data.
-        final double waited = RATE_LIMITER.acquire();
-        final String url = DUKASCOPY_URL + dukascopyPath;
-        log.info("Loading from {}, waited {}s", url, waited);
-        BufferedInputStream stream = new BufferedInputStream(new URL(url).openStream());
+        BufferedInputStream stream = fetchWithRetry(url, 1);
         retrievePathCounter.incrementAndGet();
         return stream;
     }
@@ -81,8 +101,72 @@ public class DirectDukascopyNoCache implements DukascopyCache {
         return getRetrieveCount();
     }
 
+    public int getRetryCount() {
+        return retryCounter.get();
+    }
+
     @Override
     public String cacheStats() {
-        return String.format("DirectDukascopyNoCache: %d retrieve(s)", getRetrieveCount());
+        return String.format("DirectDukascopyNoCache: %d retrieve(s) %d retry(s)", getRetrieveCount(), getRetryCount());
+    }
+
+    /**
+     * Exposed for testing
+     */
+    interface DataSource {
+        InputStream openStream() throws IOException;
+    }
+
+    @Value
+    @SuppressWarnings("RedundantModifiersValueLombok")
+    private static class UrlDataSource implements DataSource {
+        private final String url;
+
+        @Override
+        public InputStream openStream() throws IOException {
+            return new URL(url).openStream();
+        }
+
+        public String toString(){
+            return url;
+        }
+    }
+
+    /**
+     * Exposed for testing.  Fetch URL from dukascopy with retry.
+     *
+     * @param url       URL to fetch data from
+     * @param callCount number of calls attempted so far
+     * @return The data stream on success
+     * @throws IOException On an IO failure.
+     */
+    BufferedInputStream fetchWithRetry(DataSource url, int callCount) throws IOException {
+        try {
+            // keep the rate limit here as extra insurance during retries
+            final double waited = RATE_LIMITER.acquire();
+            log.info("Loading from {}, waited {}s", url, waited);
+            return new BufferedInputStream(url.openStream(), IO_BUFFER_SIZE);
+        } catch (IOException e) {
+            if (e.getMessage() != null && e.getMessage().contains("500") && callCount <= RETRY_COUNT) {
+                waitForRetry(e, callCount);
+                retryCounter.getAndIncrement();
+                return fetchWithRetry(url, ++callCount);
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    private static void waitForRetry(IOException e, int callCount) throws IOException {
+        final double pauseSeconds = PAUSE_SECONDS * callCount;
+        try {
+            log.info("Dukascopy server error: {}", e.getMessage());
+            log.warn("pausing for {} to retry", pauseSeconds);
+            final double toMilliseconds = 1000.0;
+            Thread.sleep((long) (pauseSeconds * toMilliseconds));
+        } catch (InterruptedException ex) {
+            log.info("Interrupted wait of {}s", pauseSeconds);
+            throw e;
+        }
     }
 }

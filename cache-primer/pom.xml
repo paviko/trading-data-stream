@@ -15,40 +15,50 @@
   ~    limitations under the License.
   ~
   -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.limemojito.oss.trading.trading-data-stream</groupId>
-    <artifactId>trading-data-stream</artifactId>
+    <artifactId>cache-primer</artifactId>
     <version>1.1.0-SNAPSHOT</version>
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
 
     <parent>
-        <groupId>com.limemojito.oss.standards</groupId>
-        <artifactId>oss-maven-standards</artifactId>
-        <version>2.6.1</version>
+        <groupId>com.limemojito.oss.spring-boot</groupId>
+        <artifactId>spring-boot-development</artifactId>
+        <version>10.0.1</version>
         <relativePath />
     </parent>
 
     <properties>
-        <bitbucket.url>https://bitbucket.org/limemojito/trading-data-stream</bitbucket.url>
-        <git.url>git@bitbucket.org:limemojito/trading-data-stream.git</git.url>
-
-        <coverage.exclude.pattern.1>**Main</coverage.exclude.pattern.1>
+        <!-- This is for demo purposes -->
+        <skipTests>true</skipTests>
     </properties>
 
-    <name>Trading Data Streams</name>
-    <description>
-        Streams data from &lt;a href="https://www.dukascopy.com"&gt;Dukascopy Bank&lt;/a&gt; and converts to Tick and Bar data as streams.  Use AT YOUR
-        OWN RISK.   Use of this software does not imply financial advice, financial decisions should not be based on these tools, data or software.
-        Refer to Licence.txt and Data-Disclaimer in the repository for more details.
-    </description>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.limemojito.oss.trading.trading-data-stream</groupId>
+            <artifactId>model</artifactId>
+            <version>1.1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-s3</artifactId>
+        </dependency>
 
-    <modules>
-        <module>model</module>
-        <module>example-cli</module>
-        <module>cache-primer</module>
-    </modules>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <!-- redirect this to the test classpath as we don't need it -->
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
 
   <scm>
     <tag>trading-data-stream-1.1.0-SNAPSHOT</tag>
