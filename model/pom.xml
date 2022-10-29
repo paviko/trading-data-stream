@@ -28,7 +28,7 @@
 
     <groupId>com.limemojito.oss.trading.trading-data-stream</groupId>
     <artifactId>model</artifactId>
-    <version>1.1.0-SNAPSHOT</version>
+    <version>1.1.0</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -109,6 +109,6 @@
     </dependencies>
 
   <scm>
-    <tag>trading-data-stream-1.1.0-SNAPSHOT</tag>
+    <tag>trading-data-stream-1.1.0</tag>
   </scm>
 </project>
