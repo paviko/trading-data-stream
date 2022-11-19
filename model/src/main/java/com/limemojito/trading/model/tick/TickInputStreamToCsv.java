@@ -17,58 +17,40 @@
 
 package com.limemojito.trading.model.tick;
 
+import com.limemojito.trading.model.TradingCsvStream;
 import com.limemojito.trading.model.TradingInputStream;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.time.ZonedDateTime;
+import java.util.List;
 
-import static com.limemojito.trading.model.bar.BarInputStreamToCsv.formatToString;
-import static java.nio.charset.StandardCharsets.UTF_8;
-
+/**
+ * Converts tick stream to format:
+ * <code>
+ * Epoch Time (UTC),Ask,Ask Volume,Bid,Bid Volume
+ * 2018-07-05 05:00:01.08,116573,1.76,116568,4.76
+ * </code>
+ */
 @Slf4j
-public class TickInputStreamToCsv implements AutoCloseable {
-    private final TradingInputStream<Tick> tickInputStream;
-    private final Writer writer;
-
+public class TickInputStreamToCsv extends TradingCsvStream<Tick> {
     public TickInputStreamToCsv(TradingInputStream<Tick> tickInputStream,
-                                OutputStream outputStream) {
-        this(tickInputStream, new OutputStreamWriter(outputStream, UTF_8));
+                                OutputStream outputStream) throws IOException {
+        super(tickInputStream, outputStream);
     }
 
-    public TickInputStreamToCsv(TradingInputStream<Tick> tickInputStream,
-                                Writer writer) {
-        this.tickInputStream = tickInputStream;
-        this.writer = writer;
-    }
-
-    public void convert() throws IOException {
-        log.info("Begin convert to CSV");
-        try (CSVPrinter printer = new CSVPrinter(writer, CSVFormat.EXCEL)) {
-            printer.printRecord("Epoch Time (UTC)", "Ask", "Ask Volume", "Bid", "Bid Volume");
-            printer.printComment("Generated at " + ZonedDateTime.now());
-            long count = 0L;
-            while (tickInputStream.hasNext()) {
-                Tick tick = tickInputStream.next();
-                count++;
-                printer.printRecord(formatToString(tick.getDateTimeUtc()),
-                                    tick.getAsk(),
-                                    tick.getAskVolume(),
-                                    tick.getBid(),
-                                    tick.getBidVolume());
-            }
-            log.info("Converted {} ticks", count);
-        }
+    public TickInputStreamToCsv(TradingInputStream<Tick> tickInputStream, Writer writer) throws IOException {
+        super(tickInputStream, writer);
     }
 
     @Override
-    public void close() throws IOException {
-        tickInputStream.close();
-        writer.close();
+    protected List<String> getHeader() {
+        return List.of("Epoch Time (UTC)", "Ask", "Ask Volume", "Bid", "Bid Volume");
+    }
+
+    @Override
+    protected List<Object> modelToFields(Tick tick) {
+        return List.of(tick.getDateTimeUtc(), tick.getAsk(), tick.getAskVolume(), tick.getBid(), tick.getBidVolume());
     }
 }

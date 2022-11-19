@@ -19,6 +19,7 @@ package com.limemojito.trading.model.tick;
 
 import com.limemojito.trading.model.TradingInputStream;
 import com.limemojito.trading.model.tick.dukascopy.DukascopyTickInputStream;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.utils.IOUtils;
 import org.junit.jupiter.api.Test;
 
@@ -36,6 +37,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+@Slf4j
 public class TickInputStreamToCsvTest {
 
     private final Validator validator = setupValidator();
@@ -100,6 +102,7 @@ public class TickInputStreamToCsvTest {
     }
 
     private void assertOutputOk(File csvOutput) throws IOException {
+        log.info("CSV Output to file://{}", csvOutput.getAbsolutePath());
         InputStream expectedCsvData = getClass().getResourceAsStream(tickPath + ".csv");
         assertThat(expectedCsvData).isNotNull();
         assertThat(csvOutput).isFile();

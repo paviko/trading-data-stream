@@ -20,6 +20,7 @@ package com.limemojito.trading.model.bar;
 import com.limemojito.trading.model.TradingInputStream;
 import com.limemojito.trading.model.tick.dukascopy.DukascopyTickInputStream;
 import com.limemojito.trading.model.tick.dukascopy.DukascopyUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.utils.IOUtils;
 import org.junit.jupiter.api.Test;
 
@@ -40,6 +41,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+@Slf4j
 public class BarInputStreamToCsvTest {
 
     private static final Validator VALIDATOR = DukascopyUtils.setupValidator();
@@ -104,6 +106,7 @@ public class BarInputStreamToCsvTest {
         ) {
             barCsv.convert();
         }
+        log.info("Converted bars to file://{}", csvOutput.getAbsolutePath());
         assertFileOk("/EURUSD/2018/06/05/05h_H1_bars.csv", csvOutput);
     }
 

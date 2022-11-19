@@ -6,30 +6,39 @@ information from using this software does NOT constitute financial advice.
 # Maven Dependency
 
 Library
+
 ```
 <dependency>
     <groupId>com.limemojito.oss.trading.trading-data-stream</groupId>
     <artifactId>model</artifactId>
-    <version>1.1.0</version>
+    <version>1.2.0</version>
 </dependency>
 ```
+
 Check out the source to see a working example in example-cli (Spring Boot command line).
 
 ---
+
 # Changes
 
+## 1.2.0
+
+* Improved CSV model by introducing a base class that can be extended for other projects.
+
 ## 1.1.0
+
 * Stop searches at the Beginning of Time - arbitrarily defaulted to be 2010-01-01T00:00:00Z.
 * Allow configuration of the Beginning of Time.
 * Aggregate for a number of bars before a given instant.
 * Aggregate for a number of bars after a given instant.
-* Added delayed n-retry with exponential backoff on Dukascopy IO failure.  Defaults to 3X and 2 second.
+* Added delayed n-retry with exponential backoff on Dukascopy IO failure. Defaults to 3X and 2 second.
 * Upped the rate limit after discovering 500s are occasional errors on empty paths.
 * Added a cache primer application to test load limits (concurrent requests).
 
 ## 1.0.0
-* Initial release to open source.  
-* Search ticks by symbol, time range, 
+
+* Initial release to open source.
+* Search ticks by symbol, time range,
 * Aggregate bars by time range.
 * Convert models (Tick, Bar) to csv.
 * Cache dukascopy files Direct No Cache, Local Cache and S3 Cache.
@@ -37,6 +46,7 @@ Check out the source to see a working example in example-cli (Spring Boot comman
 * Example CLI
 
 ---
+
 # Quickstart
 
 ```
@@ -56,24 +66,29 @@ java -jar example-cli/target/example-cli-1.1.0.jar --symbol=NZDUSD --period=M5 \
 
 ## AUDUSD M5 bars for 2018-01-02T00:00:00Z -> 2018-01-02T00:59:59Z as CSV with S3 cache.
 
-*note* this application cache chain is local <- s3 <- direct - ie the S3 cache is only used if it is not cached locally (~/.dukascopy-cache).
+*note* this application cache chain is local <- s3 <- direct - ie the S3 cache is only used if it is not cached
+locally (~/.dukascopy-cache).
 See S3DukascopyCache.java and the chain configuration in DataStreamCli.java for details.
+
 ```
 aws s3 mb s3://test-tick-bucket
 java -jar example-cli/target/example-cli-1.1.0.jar --spring.profiles.active=s3 \
   --bucket-name=test-tick-bucket --symbol=AUDUSD --period=M5 --start=2018-01-02T00:00:00Z \
   --end=2018-01-02T00:59:59Z --output=test-au.csv  
 ```
-   
+
 ## Prime a local cache with AUDUSD and EURUSD 2 months
+
 ```
 java -jar cache-primer/target/cache-primer-1.1.0.jar --symbol=AUDUSD --symbol EURUSD \
   --start=2018-01-01T00:00:00Z --end=2018-03-01T00:59:59Z  
 ```
 
 ## Prime a s3 cache with AUDUSD and EURUSD 2 months
+
 *note* this application cache chain is s3 <- local <- direct.
 See S3DukascopyCache.java and the chain configuration in CachePrimer.java for details.
+
 ```
 aws s3 mb s3://test-tick-bucket
 java -jar cache-primer/target/cache-primer-1.1.0.jar --spring.profiles.active=s3 \
@@ -81,8 +96,8 @@ java -jar cache-primer/target/cache-primer-1.1.0.jar --spring.profiles.active=s3
   --start=2018-01-01T00:00:00Z --end=2018-03-01T00:59:59Z  
 ```
 
-
 ---
+
 # Implementation notes
 
 Times are supplied in UTC as this matches the Dukascopy epoch data.
