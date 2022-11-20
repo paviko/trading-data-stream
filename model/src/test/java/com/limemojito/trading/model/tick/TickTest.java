@@ -17,7 +17,10 @@
 
 package com.limemojito.trading.model.tick;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.limemojito.test.JsonAsserter;
+import com.limemojito.test.JsonLoader;
+import com.limemojito.test.ObjectMapperPrototype;
 import com.limemojito.trading.model.UtcTimeUtils;
 import org.junit.jupiter.api.Test;
 
@@ -41,6 +44,16 @@ public class TickTest {
         assertThat(tick.getDateTimeUtc()).isEqualTo(UtcTimeUtils.toLocalDateTimeUtc(tick.getMillisecondsUtc()));
         assertThat(tick.getInstant()).isEqualTo(UtcTimeUtils.toInstant(tick.getMillisecondsUtc()));
         JsonAsserter.assertSerializeDeserialize(tick);
+    }
+
+    @Test
+    public void shouldBeStableJson() throws Exception {
+        ObjectMapper objectMapper = ObjectMapperPrototype.buildBootLikeMapper();
+        JsonLoader loader = new JsonLoader(objectMapper);
+
+        final Tick tick = createTick(EURUSD, 1528174843000L, 116928, Historical);
+        Tick version1 = loader.loadFrom("/model/tick-1.0.json", Tick.class);
+        assertThat(tick).usingRecursiveComparison().isEqualTo(version1);
     }
 
     @Test
