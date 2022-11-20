@@ -61,8 +61,7 @@ public final class TradingInputStreamBackwardsExtender<Model> implements Trading
                     log.warn("Reached the beginning of Time {}", theBeginningOfTime);
                     start = theBeginningOfTime;
                 }
-                end = endTime.minus(duration.multipliedBy(searchCount))
-                             .minusNanos(1);
+                end = endTime.minus(duration.multipliedBy(searchCount)).minusNanos(1);
                 return start.equals(theBeginningOfTime);
             }
 

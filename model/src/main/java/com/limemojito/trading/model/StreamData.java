@@ -50,7 +50,7 @@ public interface StreamData<DataType extends StreamData<?>> extends Comparable<D
     StreamSource getSource();
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    default String getModelVersion(){
+    default String getModelVersion() {
         return ModelVersion.VERSION;
     }
 
