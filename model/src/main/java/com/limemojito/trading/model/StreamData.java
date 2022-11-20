@@ -18,6 +18,7 @@
 package com.limemojito.trading.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.UUID;
 
@@ -48,6 +49,11 @@ public interface StreamData<DataType extends StreamData<?>> extends Comparable<D
 
     StreamSource getSource();
 
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    default String getModelVersion(){
+        return ModelVersion.VERSION;
+    }
+
     /**
      * A string representing the partition key to uses with these objects for streams, parallel processing, etc.
      *
@@ -63,6 +69,7 @@ public interface StreamData<DataType extends StreamData<?>> extends Comparable<D
 
     boolean isInSameStream(DataType other);
 
+    @SuppressWarnings("NullableProblems")
     int compareTo(DataType other);
 
     enum StreamType {
