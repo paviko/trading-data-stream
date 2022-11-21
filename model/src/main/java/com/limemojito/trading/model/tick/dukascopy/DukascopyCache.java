@@ -24,6 +24,8 @@ public interface DukascopyCache {
 
     InputStream stream(String dukascopyPath) throws IOException;
 
+    //TODO add a method for bar d1 path.  Add stats for bar cache separately, add to info string.
+
     int getHitCount();
 
     int getMissCount();

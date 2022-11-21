@@ -20,6 +20,10 @@ Check out the source to see a working example in example-cli (Spring Boot comman
 ---
 
 # Changes
+          
+## 1.3.0
+* Added a read only json property to models with the model version (1.0)
+* Split DukascopySearch implementation into Tick and Bar searches (backward compatible)
 
 ## 1.2.0
 
