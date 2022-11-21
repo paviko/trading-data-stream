@@ -17,25 +17,21 @@
 
 package com.limemojito.trading.model.tick.dukascopy.cache;
 
-import com.amazonaws.util.IOUtils;
+import com.limemojito.trading.model.bar.Bar;
 import com.limemojito.trading.model.tick.dukascopy.DukascopyCache;
-import lombok.AccessLevel;
-import lombok.Getter;
+import com.limemojito.trading.model.tick.dukascopy.criteria.BarCriteria;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public abstract class FallbackDukascopyCache implements DukascopyCache {
-
-    @Getter(AccessLevel.PROTECTED)
-    private final DukascopyCache fallback;
+public abstract class FallbackBarCache implements DukascopyCache.BarCache {
+    private final DukascopyCache.BarCache fallback;
     private final AtomicInteger cacheMiss;
     private final AtomicInteger cacheHit;
     private final AtomicInteger retrieveCount;
 
-    public FallbackDukascopyCache(DukascopyCache fallback) {
+    public FallbackBarCache(DukascopyCache.BarCache fallback) {
         this.fallback = fallback;
         this.cacheMiss = new AtomicInteger();
         this.cacheHit = new AtomicInteger();
@@ -43,16 +39,16 @@ public abstract class FallbackDukascopyCache implements DukascopyCache {
     }
 
     @Override
-    public InputStream stream(String dukascopyPath) throws IOException {
-        InputStream stream = checkCache(dukascopyPath);
-        if (stream == null) {
+    public List<Bar> getOneDayOfTicksAsBar(BarCriteria criteria, List<String> dayOfPaths) throws IOException {
+        List<Bar> bars = checkCache(criteria, dayOfPaths.get(0));
+        if (bars == null) {
             cacheMiss.incrementAndGet();
-            stream = new ByteArrayInputStream(saveDataFromFallback(dukascopyPath));
+            bars = saveDataFromFallback(criteria, dayOfPaths);
         } else {
             cacheHit.incrementAndGet();
         }
         retrieveCount.incrementAndGet();
-        return stream;
+        return bars;
     }
 
     @Override
@@ -82,22 +78,20 @@ public abstract class FallbackDukascopyCache implements DukascopyCache {
                              fallback.cacheStats());
     }
 
-    protected abstract void saveToCache(String dukascopyPath, InputStream input) throws IOException;
+    protected abstract void saveToCache(BarCriteria criteria,
+                                        String dukascopyPath,
+                                        List<Bar> oneDayOfBars) throws IOException;
 
     /**
-     * @param dukascopyPath path to check in cache
-     * @return null if not present
+     * @param criteria path to check in cache
+     * @return NULL if not present - we can have empty file sets.
      * @throws IOException on an io failure.
      */
-    protected abstract InputStream checkCache(String dukascopyPath) throws IOException;
+    protected abstract List<Bar> checkCache(BarCriteria criteria, String dukascopyPath) throws IOException;
 
-    private byte[] saveDataFromFallback(String dukascopyPath) throws IOException {
-        try (InputStream fallbackStream = fallback.stream(dukascopyPath)) {
-            final byte[] data = IOUtils.toByteArray(fallbackStream);
-            try (InputStream input = new ByteArrayInputStream(data)) {
-                saveToCache(dukascopyPath, input);
-            }
-            return data;
-        }
+    private List<Bar> saveDataFromFallback(BarCriteria criteria, List<String> dukascopyPaths) throws IOException {
+        List<Bar> data = fallback.getOneDayOfTicksAsBar(criteria, dukascopyPaths);
+        saveToCache(criteria, dukascopyPaths.get(0), data);
+        return data;
     }
 }

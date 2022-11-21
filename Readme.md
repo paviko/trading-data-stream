@@ -11,7 +11,7 @@ Library
 <dependency>
     <groupId>com.limemojito.oss.trading.trading-data-stream</groupId>
     <artifactId>model</artifactId>
-    <version>1.2.0</version>
+    <version>2.0.0</version>
 </dependency>
 ```
 
@@ -20,10 +20,20 @@ Check out the source to see a working example in example-cli (Spring Boot comman
 ---
 
 # Changes
-          
-## 1.3.0
-* Added a read only json property to models with the model version (1.0)
-* Split DukascopySearch implementation into Tick and Bar searches (backward compatible)
+
+## 2.0.0
+
+### Breaking API changes
+
+* Added bar caching that alters the cache storage and cache classes. Storage is backwards compatible however
+  the construction of the caches has altered. See DukascopyCache for details.
+* Due to bar caching tick visitors on aggregation queries are no longer supported. Tick seach functions **are**
+  supported.
+
+### Other changes
+
+* Added a read only json property to models with the model version (1.0).
+* Split DukascopySearch implementation into Tick and Bar searches (backward compatible).
 
 ## 1.2.0
 

@@ -29,6 +29,7 @@ import javax.validation.Validator;
 import java.time.Instant;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Predicate;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -41,7 +42,10 @@ public class DukascopyTickSearch extends BaseDukascopySearch {
         final TickCriteria criteria = buildTickCriteria(symbol, startTime, endTime);
         log.debug("Forming tick stream for {} {} -> {}", criteria.getSymbol(), criteria.getStart(), criteria.getEnd());
         final List<String> paths = pathGenerator.generatePaths(symbol, startTime, endTime);
-        final TradingInputStream<Tick> ticks = search(criteria, paths, tickVisitor);
+        final TradingInputStream<Tick> ticks = search(criteria.getSymbol(),
+                                                      paths,
+                                                      tick -> filterAgainst(criteria, tick),
+                                                      tickVisitor);
         log.info("Returning tick stream for {} {} -> {}", criteria.getSymbol(), criteria.getStart(), criteria.getEnd());
         return ticks;
     }
@@ -50,7 +54,10 @@ public class DukascopyTickSearch extends BaseDukascopySearch {
         return new TickCriteria(symbol, startTime, endTime);
     }
 
-    public TradingInputStream<Tick> search(Criteria criteria, List<String> paths, TickVisitor tickVisitor) {
+    public TradingInputStream<Tick> search(String symbol,
+                                           List<String> paths,
+                                           Predicate<Tick> tickSearchFilter,
+                                           TickVisitor tickVisitor) {
         final Iterator<String> pathIterator = paths.iterator();
         final Iterator<TradingInputStream<Tick>> tickStreamIterator = new Iterator<>() {
             @Override
@@ -64,10 +71,10 @@ public class DukascopyTickSearch extends BaseDukascopySearch {
             }
         };
         log.info("Returning tick stream for {} {} -> {}",
-                 criteria.getSymbol(),
+                 symbol,
                  paths.get(0),
                  paths.get(paths.size() - 1));
-        return TradingInputStream.combine(tickStreamIterator, tick -> filterAgainst(criteria, tick));
+        return TradingInputStream.combine(tickStreamIterator, tickSearchFilter);
     }
 
     private static boolean filterAgainst(Criteria criteria, Tick tick) {

@@ -19,6 +19,7 @@ package com.limemojito.trading.model.example;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.limemojito.trading.model.TradingSearch;
 import com.limemojito.trading.model.tick.dukascopy.DukascopyCache;
 import com.limemojito.trading.model.tick.dukascopy.DukascopyPathGenerator;
@@ -62,8 +63,9 @@ public class DataStreamCli {
     @Primary
     public DukascopyCache localS3Direct(AmazonS3 s3,
                                         @Value("${bucket-name}") String bucketName,
+                                        ObjectMapper objectMapper,
                                         DirectDukascopyNoCache direct) {
-        return new LocalDukascopyCache(new S3DukascopyCache(s3, bucketName, direct));
+        return new LocalDukascopyCache(objectMapper, new S3DukascopyCache(s3, bucketName, objectMapper, direct));
     }
 
     /**
@@ -75,8 +77,9 @@ public class DataStreamCli {
     @Profile("!s3")
     @Bean
     @Primary
-    public DukascopyCache localDirect(DirectDukascopyNoCache direct) {
-        return new LocalDukascopyCache(direct);
+    public DukascopyCache localDirect(ObjectMapper objectMapper,
+                                      DirectDukascopyNoCache direct) {
+        return new LocalDukascopyCache(objectMapper, direct);
     }
 
     @Bean

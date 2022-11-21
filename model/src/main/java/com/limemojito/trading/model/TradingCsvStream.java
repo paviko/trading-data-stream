@@ -77,7 +77,7 @@ public abstract class TradingCsvStream<Model> implements AutoCloseable {
             modelName = determineModelName(modelName, next);
             printer.printRecord(formatIntercept(modelToFields(next)));
         }
-        log.info("Converted {} {}}", count, modelName);
+        log.info("Converted {} {}(s)", count, modelName);
     }
 
     /**

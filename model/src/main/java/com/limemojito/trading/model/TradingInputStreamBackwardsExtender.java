@@ -19,7 +19,6 @@ package com.limemojito.trading.model;
 
 import com.limemojito.trading.model.bar.Bar;
 import com.limemojito.trading.model.bar.BarVisitor;
-import com.limemojito.trading.model.tick.TickVisitor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -36,12 +35,24 @@ public final class TradingInputStreamBackwardsExtender<Model> implements Trading
 
     private final Iterator<Model> dataIterator;
 
+    /**
+     * Extend searches to complete stream.
+     *
+     * @param symbol         Symbol to search.
+     * @param period         Period to search.
+     * @param barCountBefore Number of bars to retrieve before end time
+     * @param endTime        Start time to search.
+     * @param barVisitor     Visitor to apply
+     * @param tradingSearch  Search engine to use.
+     * @return a bar input stream
+     * @throws IOException on an io failure.
+     * @see #extend(String, Bar.Period, int, Instant, BarVisitor, TradingSearch)
+     */
     public static TradingInputStream<Bar> extend(String symbol,
                                                  Bar.Period period,
                                                  int barCountBefore,
                                                  Instant endTime,
                                                  BarVisitor barVisitor,
-                                                 TickVisitor tickVisitor,
                                                  TradingSearch tradingSearch) throws IOException {
         return new TradingInputStreamBackwardsExtender<>(barCountBefore, new Search<>() {
             private Instant start;
@@ -61,7 +72,7 @@ public final class TradingInputStreamBackwardsExtender<Model> implements Trading
                     log.warn("Reached the beginning of Time {}", theBeginningOfTime);
                     start = theBeginningOfTime;
                 }
-                end = endTime.minus(duration.multipliedBy(searchCount)).minusNanos(1);
+                end = endTime.minus(duration.multipliedBy(searchCount));
                 return start.equals(theBeginningOfTime);
             }
 
@@ -71,8 +82,7 @@ public final class TradingInputStreamBackwardsExtender<Model> implements Trading
                                                         period,
                                                         start,
                                                         end,
-                                                        barVisitor,
-                                                        tickVisitor);
+                                                        barVisitor);
             }
         });
     }

@@ -17,23 +17,65 @@
 
 package com.limemojito.trading.model.tick.dukascopy;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.limemojito.trading.model.bar.Bar;
 import com.limemojito.trading.model.tick.TickInputStreamToCsv;
+import com.limemojito.trading.model.tick.dukascopy.cache.DirectDukascopyNoCache;
+import com.limemojito.trading.model.tick.dukascopy.cache.LocalDukascopyCache;
+import com.limemojito.trading.model.tick.dukascopy.criteria.BarCriteria;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.validation.Configuration;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.util.List;
 
 import static java.lang.String.format;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 @Slf4j
 public class DukascopyUtils {
+
+    private static final TypeReference<List<Bar>> BAR_TYPE = new TypeReference<>() {
+    };
+
+    /**
+     * A basic search configuration with local cache suitable for testing only.  Default validator
+     * and object mapper implementations.  You should favour injecting default spring boot starters rather
+     * than calling this method.
+     *
+     * @return A configured search.
+     */
+    public static DukascopySearch standaloneSetup() {
+        return standaloneSetup(setupValidator(), setupObjectMapper());
+    }
+
+    /**
+     * A basic search configuration with local cache.
+     *
+     * @param validator Validation api.
+     * @param mapper    Jackson JSON api.
+     * @return A configured search.
+     */
+    public static DukascopySearch standaloneSetup(Validator validator, ObjectMapper mapper) {
+        final DukascopyCache cacheChain = new LocalDukascopyCache(mapper, new DirectDukascopyNoCache());
+        final DukascopyPathGenerator pathGenerator = new DukascopyPathGenerator();
+        return new DukascopySearch(validator, cacheChain, pathGenerator);
+    }
+
+    /**
+     * Support class for quick and dirty command lines that are not spring containers.
+     * Favour injecting the spring supplied one.
+     *
+     * @return A basic validator minimal configuration.
+     */
     public static Validator setupValidator() {
         Configuration<?> config = Validation.byDefaultProvider().configure();
         ValidatorFactory factory = config.buildValidatorFactory();
@@ -41,6 +83,19 @@ public class DukascopyUtils {
         factory.close();
         log.info("Configured Validator");
         return validator;
+    }
+
+    /**
+     * Support class for quick and dirty command lines that are not spring containers.
+     * Favour injecting the spring supplied one.
+     *
+     * @return A basic validator minimal configuration.
+     */
+    public static ObjectMapper setupObjectMapper() {
+        // register models to get java time support, etc. if on command line/
+        ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
+        log.info("Configured Jackson Object Mapper");
+        return mapper;
     }
 
     /**
@@ -64,5 +119,20 @@ public class DukascopyUtils {
             log.debug("Copied {} bytes", size);
         }
         return outputPath;
+    }
+
+    public static InputStream toJsonStream(ObjectMapper mapper, List<Bar> bars) throws IOException {
+        return new ByteArrayInputStream(mapper.writeValueAsBytes(bars));
+    }
+
+    public static List<Bar> fromJsonStream(ObjectMapper mapper, InputStream inputStream) throws IOException {
+        return mapper.readValue(inputStream, BAR_TYPE);
+    }
+
+    public static String createBarPath(BarCriteria barCriteria, String dukascopyPath) {
+        String datePart = dukascopyPath.substring(dukascopyPath.indexOf('/') + 1, dukascopyPath.lastIndexOf('/'));
+        String barPath = format("bars/%s/%s/%s.json", barCriteria.getPeriod(), barCriteria.getSymbol(), datePart);
+        log.debug("Bar path {} from {} {}", barPath, barCriteria, dukascopyPath);
+        return barPath;
     }
 }

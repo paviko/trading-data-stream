@@ -17,6 +17,7 @@
 
 package com.limemojito.trading.model.tick.dukascopy.cache;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.limemojito.trading.model.tick.dukascopy.DukascopyCache;
 import com.limemojito.trading.model.tick.dukascopy.DukascopyUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -30,6 +31,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static com.limemojito.trading.model.tick.dukascopy.DukascopyUtils.setupObjectMapper;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -42,10 +44,11 @@ public class LocalDukascopyCacheTest {
     @Mock
     private DukascopyCache fallbackMock;
     private LocalDukascopyCache cache;
+    private final ObjectMapper mapper = setupObjectMapper();
 
     @BeforeEach
     void setUp() throws IOException {
-        cache = new LocalDukascopyCache(fallbackMock);
+        cache = new LocalDukascopyCache(mapper, fallbackMock);
         cache.removeCache();
     }
 

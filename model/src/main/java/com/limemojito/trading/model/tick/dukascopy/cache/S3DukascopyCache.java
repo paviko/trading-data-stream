@@ -20,14 +20,25 @@ package com.limemojito.trading.model.tick.dukascopy.cache;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.limemojito.trading.model.bar.Bar;
 import com.limemojito.trading.model.tick.dukascopy.DukascopyCache;
+import com.limemojito.trading.model.tick.dukascopy.DukascopyTickSearch;
+import com.limemojito.trading.model.tick.dukascopy.criteria.BarCriteria;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.utils.IOUtils;
 import org.springframework.stereotype.Service;
 
+import javax.validation.Validator;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
+
+import static com.limemojito.trading.model.tick.dukascopy.DukascopyUtils.createBarPath;
+import static com.limemojito.trading.model.tick.dukascopy.DukascopyUtils.fromJsonStream;
+import static com.limemojito.trading.model.tick.dukascopy.DukascopyUtils.toJsonStream;
 
 /**
  * s3, then another cache.
@@ -39,31 +50,66 @@ public class S3DukascopyCache extends FallbackDukascopyCache {
 
     private final AmazonS3 s3;
     private final String bucketName;
+    private final ObjectMapper mapper;
 
-    public S3DukascopyCache(AmazonS3 s3, String bucketName, DukascopyCache fallback) {
+    public S3DukascopyCache(AmazonS3 s3, String bucketName, ObjectMapper mapper, DukascopyCache fallback) {
         super(fallback);
         this.s3 = s3;
         this.bucketName = bucketName;
+        this.mapper = mapper;
+    }
+
+    @Override
+    public BarCache createBarCache(Validator validator, DukascopyTickSearch tickSearch) {
+        return new S3BarCache(getFallback().createBarCache(validator, tickSearch));
     }
 
     @Override
     protected void saveToCache(String dukascopyPath, InputStream input) throws IOException {
-        final byte[] bytes = IOUtils.toByteArray(input);
-        final ObjectMetadata metadata = new ObjectMetadata();
-        metadata.setContentLength(bytes.length);
-        metadata.setContentType("application/octet-stream");
-        metadata.setContentDisposition(dukascopyPath);
-        try (ByteArrayInputStream s3Input = new ByteArrayInputStream(bytes)) {
-            log.info("Saving to s3://{}/{}", bucketName, dukascopyPath);
-            s3.putObject(new PutObjectRequest(bucketName, dukascopyPath, s3Input, metadata));
-        }
+        saveToS3(dukascopyPath, input, "application/octet-stream");
     }
 
     @Override
     protected InputStream checkCache(String dukascopyPath) {
-        if (s3.doesObjectExist(bucketName, dukascopyPath)) {
-            log.info("Retrieving s3://{}/{}", bucketName, dukascopyPath);
-            return s3.getObject(bucketName, dukascopyPath).getObjectContent();
+        return checkS3(dukascopyPath);
+    }
+
+    private final class S3BarCache extends FallbackBarCache {
+        private S3BarCache(BarCache fallback) {
+            super(fallback);
+        }
+
+        @Override
+        protected void saveToCache(BarCriteria criteria,
+                                   String dukascopyPath,
+                                   List<Bar> oneDayOfBars) throws IOException {
+            saveToS3(createBarPath(criteria, dukascopyPath), toJsonStream(mapper, oneDayOfBars), "application/json");
+        }
+
+        @Override
+        protected List<Bar> checkCache(BarCriteria criteria, String dukascopyPath) throws IOException {
+            S3ObjectInputStream inputStream = checkS3(createBarPath(criteria, dukascopyPath));
+            return inputStream == null ? null : fromJsonStream(mapper, inputStream);
+        }
+
+    }
+
+    private void saveToS3(String path, InputStream input, String contentType) throws IOException {
+        final byte[] bytes = IOUtils.toByteArray(input);
+        final ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentLength(bytes.length);
+        metadata.setContentType(contentType);
+        metadata.setContentDisposition(path);
+        try (ByteArrayInputStream s3Input = new ByteArrayInputStream(bytes)) {
+            log.info("Saving to s3://{}/{}", bucketName, path);
+            s3.putObject(new PutObjectRequest(bucketName, path, s3Input, metadata));
+        }
+    }
+
+    private S3ObjectInputStream checkS3(String path) {
+        if (s3.doesObjectExist(bucketName, path)) {
+            log.info("Retrieving s3://{}/{}", bucketName, path);
+            return s3.getObject(bucketName, path).getObjectContent();
         } else {
             return null;
         }

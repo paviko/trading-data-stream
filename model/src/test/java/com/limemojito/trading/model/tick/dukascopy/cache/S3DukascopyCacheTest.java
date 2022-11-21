@@ -21,6 +21,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectResult;
 import com.amazonaws.services.s3.model.S3Object;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.limemojito.trading.model.tick.dukascopy.DukascopyCache;
 import com.limemojito.trading.model.tick.dukascopy.DukascopyUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -36,6 +37,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static com.limemojito.trading.model.tick.dukascopy.DukascopyUtils.setupObjectMapper;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
@@ -46,6 +48,7 @@ public class S3DukascopyCacheTest {
     private final String dukascopyTickPath = "EURUSD/2018/06/05/05h_ticks.bi5";
 
     private final String bucketName = "bucketName";
+    private final ObjectMapper mapper = setupObjectMapper();
     @Mock
     private AmazonS3 s3;
     @Mock
@@ -56,7 +59,7 @@ public class S3DukascopyCacheTest {
 
     @BeforeEach
     void setUp() {
-        cache = new S3DukascopyCache(s3, bucketName, fallbackMock);
+        cache = new S3DukascopyCache(s3, bucketName, mapper, fallbackMock);
     }
 
     @AfterEach

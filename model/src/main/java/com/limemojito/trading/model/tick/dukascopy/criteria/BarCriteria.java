@@ -20,9 +20,11 @@ package com.limemojito.trading.model.tick.dukascopy.criteria;
 import com.limemojito.trading.model.bar.Bar;
 import lombok.Value;
 
+import java.time.Duration;
 import java.time.Instant;
 
 import static com.limemojito.trading.model.tick.dukascopy.criteria.Criteria.assertBeforeStart;
+import static java.time.temporal.ChronoUnit.DAYS;
 
 @Value
 @SuppressWarnings("RedundantModifiersValueLombok")
@@ -33,10 +35,24 @@ public class BarCriteria implements Criteria {
         assertBeforeStart(start, end);
         this.start = Criteria.roundStart(period, start);
         this.end = Criteria.roundEndInstant(period, end);
+        this.dayStart = start.truncatedTo(DAYS);
+        this.dayEnd = end.plus(1, DAYS).truncatedTo(DAYS).minusNanos(1);
+        this.numDays = (int) Duration.between(dayStart, dayEnd).toDaysPart() + 1;
     }
 
+    public Instant getDayStart(int i) {
+        return dayStart.plus(i, DAYS);
+    }
+
+    public Instant getDayEnd(int i) {
+        return dayStart.plus(i + 1, DAYS).minusNanos(1);
+    }
+
+    private final int numDays;
     private final String symbol;
     private final Bar.Period period;
     private final Instant start;
     private final Instant end;
+    private final Instant dayStart;
+    private final Instant dayEnd;
 }

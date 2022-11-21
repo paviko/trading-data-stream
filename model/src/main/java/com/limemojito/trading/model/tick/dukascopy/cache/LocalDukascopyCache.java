@@ -17,19 +17,29 @@
 
 package com.limemojito.trading.model.tick.dukascopy.cache;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.limemojito.trading.model.bar.Bar;
 import com.limemojito.trading.model.tick.dukascopy.DukascopyCache;
+import com.limemojito.trading.model.tick.dukascopy.DukascopyTickSearch;
+import com.limemojito.trading.model.tick.dukascopy.criteria.BarCriteria;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.validation.Validator;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static com.limemojito.trading.model.tick.dukascopy.DukascopyUtils.createBarPath;
+import static com.limemojito.trading.model.tick.dukascopy.DukascopyUtils.fromJsonStream;
+import static com.limemojito.trading.model.tick.dukascopy.DukascopyUtils.toJsonStream;
 import static java.lang.System.getProperty;
 
 /**
@@ -46,9 +56,11 @@ public class LocalDukascopyCache extends FallbackDukascopyCache {
 
     private static final Path CACHE_DIR = new File(getProperty(PROP_DIR, getProperty("user.home")),
                                                    ".dukascopy-cache").toPath();
+    private final ObjectMapper mapper;
 
-    public LocalDukascopyCache(DukascopyCache fallback) {
+    public LocalDukascopyCache(ObjectMapper mapper, DukascopyCache fallback) {
         super(fallback);
+        this.mapper = mapper;
         if (CACHE_DIR.toFile().mkdir()) {
             log.info("Created local cache at {}", CACHE_DIR);
         }
@@ -74,16 +86,49 @@ public class LocalDukascopyCache extends FallbackDukascopyCache {
     }
 
     @Override
+    public BarCache createBarCache(Validator validator, DukascopyTickSearch tickSearch) {
+        return new LocalBarCache(getFallback().createBarCache(validator, tickSearch));
+    }
+
+    @Override
     protected void saveToCache(String dukascopyPath, InputStream input) throws IOException {
-        Path cachePath = Path.of(CACHE_DIR.toString(), dukascopyPath);
-        //noinspection ResultOfMethodCallIgnored
-        cachePath.toFile().getParentFile().mkdirs();
-        Files.copy(input, cachePath);
+        saveLocal(dukascopyPath, input);
     }
 
     @Override
     protected InputStream checkCache(String dukascopyPath) throws IOException {
-        final File file = Path.of(CACHE_DIR.toString(), dukascopyPath).toFile();
+        return checkLocal(dukascopyPath);
+    }
+
+    private final class LocalBarCache extends FallbackBarCache {
+        private LocalBarCache(BarCache fallbackBarCache) {
+            super(fallbackBarCache);
+        }
+
+        @Override
+        protected void saveToCache(BarCriteria criteria,
+                                   String dukascopyPath,
+                                   List<Bar> oneDayOfBars) throws IOException {
+            saveLocal(createBarPath(criteria, dukascopyPath), toJsonStream(mapper, oneDayOfBars));
+        }
+
+        @Override
+        protected List<Bar> checkCache(BarCriteria criteria, String dukascopyPath) throws IOException {
+            InputStream inputStream = checkLocal(createBarPath(criteria, dukascopyPath));
+            return inputStream == null ? null : fromJsonStream(mapper, inputStream);
+        }
+    }
+
+    private static void saveLocal(String path, InputStream input) throws IOException {
+        Path cachePath = Path.of(CACHE_DIR.toString(), path);
+        //noinspection ResultOfMethodCallIgnored
+        cachePath.toFile().getParentFile().mkdirs();
+        Files.copy(input, cachePath);
+        log.debug("Saved {} in local cache {}", path, cachePath);
+    }
+
+    private static InputStream checkLocal(String path) throws FileNotFoundException {
+        final File file = Path.of(CACHE_DIR.toString(), path).toFile();
         if (file.isFile()) {
             log.debug("Found in local cache {}", file);
             return new FileInputStream(file);

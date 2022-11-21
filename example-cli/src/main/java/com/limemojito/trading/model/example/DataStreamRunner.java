@@ -32,6 +32,7 @@ import org.springframework.stereotype.Component;
 import java.io.File;
 import java.io.FileWriter;
 import java.time.Instant;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -65,6 +66,10 @@ public class DataStreamRunner implements ApplicationRunner {
         if (!args.containsOption(name)) {
             throw new IllegalArgumentException("Missing command line argument --" + name + "=????");
         }
-        return args.getOptionValues(name).get(0);
+        List<String> optionValues = args.getOptionValues(name);
+        if (optionValues.isEmpty()){
+            throw new IllegalArgumentException("No value for command line argument --" + name + " Are you missing = ?");
+        }
+        return optionValues.get(0);
     }
 }

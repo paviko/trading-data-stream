@@ -17,6 +17,7 @@
 
 package com.limemojito.trading.model.tick.dukascopy;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.limemojito.trading.model.TradingInputStream;
 import com.limemojito.trading.model.TradingSearch;
 import com.limemojito.trading.model.bar.Bar;
@@ -24,6 +25,7 @@ import com.limemojito.trading.model.bar.BarInputStreamToCsv;
 import com.limemojito.trading.model.bar.BarVisitor;
 import com.limemojito.trading.model.tick.Tick;
 import com.limemojito.trading.model.tick.TickVisitor;
+import com.limemojito.trading.model.tick.dukascopy.bar.DukascopyBarSearch;
 import com.limemojito.trading.model.tick.dukascopy.cache.DirectDukascopyNoCache;
 import com.limemojito.trading.model.tick.dukascopy.cache.LocalDukascopyCache;
 import lombok.extern.slf4j.Slf4j;
@@ -37,16 +39,22 @@ import java.time.Instant;
 @Service
 @Slf4j
 public class DukascopySearch extends BaseDukascopySearch implements TradingSearch {
-    /**
-     * Backwards compatibility.
-     */
     public static final String DEFAULT_BEGINNING_OF_TIME = BaseDukascopySearch.DEFAULT_BEGINNING_OF_TIME;
     private final DukascopyTickSearch tickSearch;
     private final DukascopyBarSearch barSearch;
 
-    public DukascopySearch(Validator validator, DukascopyCache cache, DukascopyPathGenerator pathGenerator) {
+    /**
+     * Creates a new Dukascopy based search engine.
+     *
+     * @param validator     Validates generated objects.
+     * @param cache         Caching strategy for model objects.
+     * @param pathGenerator Dukascopy path generator to use for data retrieval.
+     */
+    public DukascopySearch(Validator validator,
+                           DukascopyCache cache,
+                           DukascopyPathGenerator pathGenerator) {
         this.tickSearch = new DukascopyTickSearch(validator, cache, pathGenerator);
-        this.barSearch = new DukascopyBarSearch(validator, cache, pathGenerator, tickSearch);
+        this.barSearch = new DukascopyBarSearch(cache.createBarCache(validator, tickSearch), pathGenerator);
     }
 
     @Override
@@ -65,8 +73,9 @@ public class DukascopySearch extends BaseDukascopySearch implements TradingSearc
     @SuppressWarnings("MagicNumber")
     public static void main(String... args) throws IOException {
         final Validator theValidator = DukascopyUtils.setupValidator();
+        final ObjectMapper mapper = DukascopyUtils.setupObjectMapper();
         DukascopySearch search = new DukascopySearch(theValidator,
-                                                     new LocalDukascopyCache(new DirectDukascopyNoCache()),
+                                                     new LocalDukascopyCache(mapper, new DirectDukascopyNoCache()),
                                                      new DukascopyPathGenerator());
         final String symbol = args[0];
         final Bar.Period period = Bar.Period.valueOf(args[1]);
@@ -93,9 +102,8 @@ public class DukascopySearch extends BaseDukascopySearch implements TradingSearc
                                                       Bar.Period period,
                                                       Instant startTime,
                                                       Instant endTime,
-                                                      BarVisitor barVisitor,
-                                                      TickVisitor tickVisitor) {
+                                                      BarVisitor barVisitor) throws IOException {
         assertCriteriaTimes(startTime, endTime);
-        return barSearch.search(symbol, period, startTime, endTime, barVisitor, tickVisitor);
+        return barSearch.searchForDaysIn(symbol, period, startTime, endTime, barVisitor);
     }
 }
