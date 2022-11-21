@@ -46,6 +46,13 @@ public interface TradingSearch {
     Instant getTheBeginningOfTime();
 
     /**
+     * A cache usage description
+     *
+     * @return A string representing cache usage.
+     */
+    String cacheStats();
+
+    /**
      * Retrieve a steam of ticks.
      *
      * @param symbol    Symbol to search on.
