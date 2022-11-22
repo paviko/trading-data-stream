@@ -112,14 +112,14 @@ public class LocalDukascopyCache extends FallbackDukascopyCache {
 
         @Override
         protected void saveToCache(BarCriteria criteria,
-                                   String dukascopyPath,
+                                   String firstDukascopyDayPath,
                                    List<Bar> oneDayOfBars) throws IOException {
-            saveLocal(createBarPath(criteria, dukascopyPath), toJsonStream(mapper, oneDayOfBars));
+            saveLocal(createBarPath(criteria, firstDukascopyDayPath), toJsonStream(mapper, oneDayOfBars));
         }
 
         @Override
-        protected List<Bar> checkCache(BarCriteria criteria, String dukascopyPath) throws IOException {
-            InputStream inputStream = checkLocal(createBarPath(criteria, dukascopyPath));
+        protected List<Bar> checkCache(BarCriteria criteria, String firstDukascopyDayPath) throws IOException {
+            InputStream inputStream = checkLocal(createBarPath(criteria, firstDukascopyDayPath));
             return inputStream == null ? null : fromJsonStream(mapper, inputStream);
         }
     }

@@ -140,10 +140,11 @@ public class DukascopyUtils {
         return mapper.readValue(inputStream, BAR_TYPE);
     }
 
-    public static String createBarPath(BarCriteria barCriteria, String dukascopyPath) {
-        String datePart = dukascopyPath.substring(dukascopyPath.indexOf('/') + 1, dukascopyPath.lastIndexOf('/'));
+    public static String createBarPath(BarCriteria barCriteria, String firstDukascopyDayPath) {
+        String datePart = firstDukascopyDayPath.substring(firstDukascopyDayPath.indexOf('/') + 1,
+                                                          firstDukascopyDayPath.lastIndexOf('/'));
         String barPath = format("bars/%s/%s/%s.json", barCriteria.getPeriod(), barCriteria.getSymbol(), datePart);
-        log.debug("Bar path {} from {} {}", barPath, barCriteria, dukascopyPath);
+        log.debug("Bar path {} from {} {}", barPath, barCriteria, firstDukascopyDayPath);
         return barPath;
     }
 }

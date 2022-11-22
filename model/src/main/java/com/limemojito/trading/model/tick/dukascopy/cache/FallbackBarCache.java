@@ -84,10 +84,11 @@ public abstract class FallbackBarCache implements DukascopyCache.BarCache {
 
     /**
      * @param criteria path to check in cache
+     * @param firstDukascopyDayPath Path of the first 1H ticks to check against cache.
      * @return NULL if not present - we can have empty file sets.
      * @throws IOException on an io failure.
      */
-    protected abstract List<Bar> checkCache(BarCriteria criteria, String dukascopyPath) throws IOException;
+    protected abstract List<Bar> checkCache(BarCriteria criteria, String firstDukascopyDayPath) throws IOException;
 
     private List<Bar> saveDataFromFallback(BarCriteria criteria, List<String> dukascopyPaths) throws IOException {
         List<Bar> data = fallback.getOneDayOfTicksAsBar(criteria, dukascopyPaths);

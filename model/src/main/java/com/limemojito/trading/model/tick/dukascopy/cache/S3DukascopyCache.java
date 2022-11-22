@@ -87,8 +87,8 @@ public class S3DukascopyCache extends FallbackDukascopyCache {
         }
 
         @Override
-        protected List<Bar> checkCache(BarCriteria criteria, String dukascopyPath) throws IOException {
-            S3ObjectInputStream inputStream = checkS3(createBarPath(criteria, dukascopyPath));
+        protected List<Bar> checkCache(BarCriteria criteria, String firstDukascopyDayPath) throws IOException {
+            S3ObjectInputStream inputStream = checkS3(createBarPath(criteria, firstDukascopyDayPath));
             return inputStream == null ? null : fromJsonStream(mapper, inputStream);
         }
 
