@@ -28,13 +28,15 @@ Check out the source to see a working example in example-cli (Spring Boot comman
 * Added bar caching that alters the cache storage and cache classes. Storage is backwards compatible however
   the construction of the caches has altered. Bar Caching produced repeated aggregations at 240X faster in our example
   in technical notes.
-* Due to bar caching tick visitors on aggregation queries are no longer supported. Tick search functions **are**
-  supported.
+* Due to bar caching tick visitors on aggregation queries are no longer supported. 
+* Tick search functions **are** still supported for tick visitors.
 
 ### Other changes
 
 * Added a read only json property to models with the model version (1.0).
 * Split DukascopySearch implementation into Tick and Bar searches (backward compatible).
+* Local cache can have the cache directory set via an alternate constructor.
+* trading-data-stream development no longer deletes the default cache location.
 
 ## 1.2.0
 
