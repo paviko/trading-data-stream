@@ -114,7 +114,7 @@ public class DirectDukascopyNoCache implements DukascopyCache {
 
     @Override
     public BarCache createBarCache(Validator validator, DukascopyTickSearch tickSearch) {
-        return new DirectBarNoCache(validator, tickSearch);
+        return new DirectDukascopyBarNoCache(validator, tickSearch);
     }
 
     /**

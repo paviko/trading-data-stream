@@ -48,17 +48,17 @@ public class CachePrimer {
     }
 
     /**
-     * @param s3         amazon S3 client only enabled on s3 profile (--spring.profiles.active=s3)
-     * @param bucketName Name of s3 bucket to use as 2nd level cache. (--bucket-name=my-tick-bucket)
+     * @param s3           amazon S3 client only enabled on s3 profile (--spring.profiles.active=s3)
+     * @param bucketName   Name of s3 bucket to use as 2nd level cache. (--bucket-name=my-tick-bucket)
      * @param objectMapper Json mapper.
-     * @param direct     Direct access bean.
+     * @param direct       Direct access bean.
      * @return a configured Local -&gt; S3 -&gt; Direct cache.
      */
     @Profile("s3")
     @Bean
     @Primary
     public DukascopyCache s3Direct(AmazonS3 s3,
-                                        @Value("${bucket-name}") String bucketName,
+                                   @Value("${bucket-name}") String bucketName,
                                    ObjectMapper objectMapper,
                                    DirectDukascopyNoCache direct) {
         LocalDukascopyCache fallback = new LocalDukascopyCache(objectMapper, direct);
@@ -69,14 +69,14 @@ public class CachePrimer {
      * Only enabled when the profile is not s3 (including default).
      *
      * @param objectMapper Json mapper.
-     * @param direct Direct access bean.
+     * @param direct       Direct access bean.
      * @return a configured Local -&gt; Direct cache.
      */
     @Profile("!s3")
     @Bean
     @Primary
     public DukascopyCache localDirect(ObjectMapper objectMapper, DirectDukascopyNoCache direct) {
-        return new LocalDukascopyCache(objectMapper,direct);
+        return new LocalDukascopyCache(objectMapper, direct);
     }
 
     @Bean(destroyMethod = "shutdown")

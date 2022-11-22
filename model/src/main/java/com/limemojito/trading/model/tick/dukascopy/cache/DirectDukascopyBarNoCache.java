@@ -36,7 +36,7 @@ import static com.limemojito.trading.model.tick.TickVisitor.NO_VISITOR;
 
 @RequiredArgsConstructor
 @Slf4j
-public class DirectBarNoCache implements DukascopyCache.BarCache {
+public class DirectDukascopyBarNoCache implements DukascopyCache.BarCache {
     private final Validator validator;
     private final DukascopyTickSearch tickSearch;
     private final AtomicInteger retrieveCount = new AtomicInteger();
@@ -44,7 +44,7 @@ public class DirectBarNoCache implements DukascopyCache.BarCache {
     public List<Bar> getOneDayOfTicksAsBar(BarCriteria criteria, List<String> dayOfPaths) throws IOException {
         final int supportedSize = 24;
         if (dayOfPaths.size() > supportedSize) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Paths for Day of 1H Tick files is not 24! " + dayOfPaths.size());
         }
         log.info("Retrieving {} {} {} -> {} as direct Dukascopy tick fetch",
                  criteria.getSymbol(),
@@ -80,6 +80,6 @@ public class DirectBarNoCache implements DukascopyCache.BarCache {
 
     @Override
     public String cacheStats() {
-        return String.format("DirectBarNoCache: %d retrieve(s)", getRetrieveCount());
+        return String.format("DirectBarNoCache: %d day retrieve(s)", getRetrieveCount());
     }
 }

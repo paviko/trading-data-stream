@@ -50,10 +50,6 @@ public class DukascopyTickSearch extends BaseDukascopySearch {
         return ticks;
     }
 
-    private TickCriteria buildTickCriteria(String symbol, Instant startTime, Instant endTime) {
-        return new TickCriteria(symbol, startTime, endTime);
-    }
-
     public TradingInputStream<Tick> search(String symbol,
                                            List<String> paths,
                                            Predicate<Tick> tickSearchFilter,
@@ -75,6 +71,10 @@ public class DukascopyTickSearch extends BaseDukascopySearch {
                  paths.get(0),
                  paths.get(paths.size() - 1));
         return TradingInputStream.combine(tickStreamIterator, tickSearchFilter);
+    }
+
+    private TickCriteria buildTickCriteria(String symbol, Instant startTime, Instant endTime) {
+        return new TickCriteria(symbol, startTime, endTime);
     }
 
     private static boolean filterAgainst(Criteria criteria, Tick tick) {

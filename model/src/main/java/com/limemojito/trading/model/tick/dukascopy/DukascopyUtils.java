@@ -45,6 +45,9 @@ public class DukascopyUtils {
 
     private static final TypeReference<List<Bar>> BAR_TYPE = new TypeReference<>() {
     };
+    private static DukascopySearch lazySearch;
+    private static Validator lazyValidator;
+    private static ObjectMapper lazyMapper;
 
     /**
      * A basic search configuration with local cache suitable for testing only.  Default validator
@@ -65,9 +68,13 @@ public class DukascopyUtils {
      * @return A configured search.
      */
     public static DukascopySearch standaloneSetup(Validator validator, ObjectMapper mapper) {
-        final DukascopyCache cacheChain = new LocalDukascopyCache(mapper, new DirectDukascopyNoCache());
-        final DukascopyPathGenerator pathGenerator = new DukascopyPathGenerator();
-        return new DukascopySearch(validator, cacheChain, pathGenerator);
+        if (lazySearch == null) {
+            final DukascopyCache cacheChain = new LocalDukascopyCache(mapper, new DirectDukascopyNoCache());
+            final DukascopyPathGenerator pathGenerator = new DukascopyPathGenerator();
+            lazySearch = new DukascopySearch(validator, cacheChain, pathGenerator);
+            log.info("Standalone setup with cache chain {}", cacheChain.getClass().getSimpleName());
+        }
+        return lazySearch;
     }
 
     /**
@@ -77,12 +84,14 @@ public class DukascopyUtils {
      * @return A basic validator minimal configuration.
      */
     public static Validator setupValidator() {
-        Configuration<?> config = Validation.byDefaultProvider().configure();
-        ValidatorFactory factory = config.buildValidatorFactory();
-        Validator validator = factory.getValidator();
-        factory.close();
-        log.info("Configured Validator");
-        return validator;
+        if (lazyValidator == null) {
+            Configuration<?> config = Validation.byDefaultProvider().configure();
+            ValidatorFactory factory = config.buildValidatorFactory();
+            lazyValidator = factory.getValidator();
+            factory.close();
+            log.info("Configured Validator");
+        }
+        return lazyValidator;
     }
 
     /**
@@ -92,10 +101,12 @@ public class DukascopyUtils {
      * @return A basic validator minimal configuration.
      */
     public static ObjectMapper setupObjectMapper() {
-        // register models to get java time support, etc. if on command line/
-        ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
-        log.info("Configured Jackson Object Mapper");
-        return mapper;
+        if (lazyMapper == null) {
+            // register models to get java time support, etc. if on command line/
+            lazyMapper = new ObjectMapper().findAndRegisterModules();
+            log.info("Configured Jackson Object Mapper");
+        }
+        return lazyMapper;
     }
 
     /**

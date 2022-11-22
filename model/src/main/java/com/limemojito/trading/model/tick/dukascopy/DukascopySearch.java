@@ -24,7 +24,6 @@ import com.limemojito.trading.model.bar.BarInputStreamToCsv;
 import com.limemojito.trading.model.bar.BarVisitor;
 import com.limemojito.trading.model.tick.Tick;
 import com.limemojito.trading.model.tick.TickVisitor;
-import com.limemojito.trading.model.tick.dukascopy.bar.DukascopyBarSearch;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 

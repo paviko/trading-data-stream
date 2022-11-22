@@ -15,15 +15,13 @@
  *
  */
 
-package com.limemojito.trading.model.tick.dukascopy.bar;
+package com.limemojito.trading.model.tick.dukascopy;
 
 import com.limemojito.trading.model.TradingInputStream;
 import com.limemojito.trading.model.bar.Bar;
 import com.limemojito.trading.model.bar.BarListInputStream;
 import com.limemojito.trading.model.bar.BarVisitor;
-import com.limemojito.trading.model.tick.dukascopy.BaseDukascopySearch;
 import com.limemojito.trading.model.tick.dukascopy.DukascopyCache.BarCache;
-import com.limemojito.trading.model.tick.dukascopy.DukascopyPathGenerator;
 import com.limemojito.trading.model.tick.dukascopy.criteria.BarCriteria;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
