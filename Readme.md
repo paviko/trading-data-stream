@@ -26,8 +26,9 @@ Check out the source to see a working example in example-cli (Spring Boot comman
 ### Breaking API changes
 
 * Added bar caching that alters the cache storage and cache classes. Storage is backwards compatible however
-  the construction of the caches has altered. See DukascopyCache for details.
-* Due to bar caching tick visitors on aggregation queries are no longer supported. Tick seach functions **are**
+  the construction of the caches has altered. Bar Caching produced repeated aggregations at 240X faster in our example
+  in technical notes.
+* Due to bar caching tick visitors on aggregation queries are no longer supported. Tick search functions **are**
   supported.
 
 ### Other changes
@@ -74,7 +75,7 @@ this produces the model jar, example-cli and a cache primer application.
 *note* that files are cached locally in ~/.dukascopy-cache. See LocalDukascopyCache.java for details.
 
 ```
-java -jar example-cli/target/example-cli-1.1.0.jar --symbol=NZDUSD --period=M5 \
+java -jar example-cli/target/example-cli-2.0.0.jar --symbol=NZDUSD --period=M5 \
   --start=2018-01-02T00:00:00Z --end=2018-01-02T00:59:59Z --output=test-nz.csv  
 ```
 
@@ -86,7 +87,7 @@ See S3DukascopyCache.java and the chain configuration in DataStreamCli.java for 
 
 ```
 aws s3 mb s3://test-tick-bucket
-java -jar example-cli/target/example-cli-1.1.0.jar --spring.profiles.active=s3 \
+java -jar example-cli/target/example-cli-2.0.0.jar --spring.profiles.active=s3 \
   --bucket-name=test-tick-bucket --symbol=AUDUSD --period=M5 --start=2018-01-02T00:00:00Z \
   --end=2018-01-02T00:59:59Z --output=test-au.csv  
 ```
@@ -94,7 +95,7 @@ java -jar example-cli/target/example-cli-1.1.0.jar --spring.profiles.active=s3 \
 ## Prime a local cache with AUDUSD and EURUSD 2 months
 
 ```
-java -jar cache-primer/target/cache-primer-1.1.0.jar --symbol=AUDUSD --symbol EURUSD \
+java -jar cache-primer/target/cache-primer-2.0.0.jar --symbol=AUDUSD --symbol EURUSD \
   --start=2018-01-01T00:00:00Z --end=2018-03-01T00:59:59Z  
 ```
 
@@ -105,7 +106,7 @@ See S3DukascopyCache.java and the chain configuration in CachePrimer.java for de
 
 ```
 aws s3 mb s3://test-tick-bucket
-java -jar cache-primer/target/cache-primer-1.1.0.jar --spring.profiles.active=s3 \
+java -jar cache-primer/target/cache-primer-2.0.0.jar --spring.profiles.active=s3 \
   --bucket-name=test-tick-bucket --symbol=AUDUSD --symbol EURUSD \
   --start=2018-01-01T00:00:00Z --end=2018-03-01T00:59:59Z  
 ```
@@ -133,6 +134,23 @@ that may exist together on a common transport. You may not need this approach fo
 Price represent Bid tone.
 
 See BarTickStreamAggregator.java for details.
+
+## Cache speed
+
+Run on an M1 Max with 100MB internet retrieving 559 M10 bars. Your performance may vary.
+
+559 bars to CSV shows a 240X improvement on repeated bar aggregations versus 3.6% worst case performance increase.
+Worst case is dependent on how many days of H1 tick files are required to answer query.
+
+```
+java -jar example-cli/target/example-cli-2.0.0.jar --symbol=EURUSD --period=M10 \
+--start="2019-05-07T00:00:00Z" --end="2019-05-11T00:00:00Z" --output=./test.csv
+```
+
+| Version |	Empty Cache Query Aggregation Time | Repeat Query Aggregation Time |
+| ------- | ---------------------------------- | -------------------------------- |
+|1.x | 55s | 12s |
+|2.0 | 57s | 0.05s |
 
 ## Dukascopy Tick Data Exploration
 
