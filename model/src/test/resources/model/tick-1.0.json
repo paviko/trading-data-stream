@@ -1,0 +1,11 @@
+{
+  "millisecondsUtc": 1528174843000,
+  "streamId": "00000000-0000-0000-0000-000000000000",
+  "symbol": "EURUSD",
+  "ask": 116939,
+  "bid": 116928,
+  "askVolume": 3.45,
+  "bidVolume": 1.28,
+  "source": "Historical",
+  "modelVersion": "1.0"
+}

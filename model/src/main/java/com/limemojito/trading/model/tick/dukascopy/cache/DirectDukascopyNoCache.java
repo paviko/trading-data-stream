@@ -19,10 +19,12 @@ package com.limemojito.trading.model.tick.dukascopy.cache;
 
 import com.google.common.util.concurrent.RateLimiter;
 import com.limemojito.trading.model.tick.dukascopy.DukascopyCache;
+import com.limemojito.trading.model.tick.dukascopy.DukascopyTickSearch;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.validation.Validator;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -108,6 +110,11 @@ public class DirectDukascopyNoCache implements DukascopyCache {
     @Override
     public String cacheStats() {
         return String.format("DirectDukascopyNoCache: %d retrieve(s) %d retry(s)", getRetrieveCount(), getRetryCount());
+    }
+
+    @Override
+    public BarCache createBarCache(Validator validator, DukascopyTickSearch tickSearch) {
+        return new DirectDukascopyBarNoCache(validator, tickSearch);
     }
 
     /**

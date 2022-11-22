@@ -17,19 +17,29 @@
 
 package com.limemojito.trading.model.tick.dukascopy.cache;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.limemojito.trading.model.bar.Bar;
 import com.limemojito.trading.model.tick.dukascopy.DukascopyCache;
+import com.limemojito.trading.model.tick.dukascopy.DukascopyTickSearch;
+import com.limemojito.trading.model.tick.dukascopy.criteria.BarCriteria;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.validation.Validator;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static com.limemojito.trading.model.tick.dukascopy.DukascopyUtils.createBarPath;
+import static com.limemojito.trading.model.tick.dukascopy.DukascopyUtils.fromJsonStream;
+import static com.limemojito.trading.model.tick.dukascopy.DukascopyUtils.toJsonStream;
 import static java.lang.System.getProperty;
 
 /**
@@ -44,18 +54,25 @@ public class LocalDukascopyCache extends FallbackDukascopyCache {
      */
     public static final String PROP_DIR = DirectDukascopyNoCache.class.getPackageName() + ".localCacheDir";
 
-    private static final Path CACHE_DIR = new File(getProperty(PROP_DIR, getProperty("user.home")),
-                                                   ".dukascopy-cache").toPath();
+    private final ObjectMapper mapper;
+    private final Path cacheDirectory;
 
-    public LocalDukascopyCache(DukascopyCache fallback) {
+    public LocalDukascopyCache(ObjectMapper mapper, DukascopyCache fallback) {
+        this(mapper, fallback, new File(getProperty(PROP_DIR, getProperty("user.home")),
+                                        ".dukascopy-cache").toPath());
+    }
+
+    public LocalDukascopyCache(ObjectMapper mapper, DukascopyCache fallback, Path directory) {
         super(fallback);
-        if (CACHE_DIR.toFile().mkdir()) {
-            log.info("Created local cache at {}", CACHE_DIR);
+        this.mapper = mapper;
+        if (directory.toFile().mkdir()) {
+            log.info("Created local cache at {}", directory);
         }
+        this.cacheDirectory = directory;
     }
 
     public long getCacheSizeBytes() throws IOException {
-        try (Stream<Path> walk = Files.walk(CACHE_DIR)) {
+        try (Stream<Path> walk = Files.walk(cacheDirectory)) {
             final Optional<Long> size = walk.map(Path::toFile)
                                             .map(File::length)
                                             .reduce(Long::sum);
@@ -64,8 +81,8 @@ public class LocalDukascopyCache extends FallbackDukascopyCache {
     }
 
     public void removeCache() throws IOException {
-        log.info("Removing cache at {}", CACHE_DIR);
-        try (Stream<Path> walk = Files.walk(CACHE_DIR)) {
+        log.info("Removing cache at {}", cacheDirectory);
+        try (Stream<Path> walk = Files.walk(cacheDirectory)) {
             //noinspection ResultOfMethodCallIgnored
             walk.sorted(Comparator.reverseOrder())
                 .map(Path::toFile)
@@ -74,16 +91,49 @@ public class LocalDukascopyCache extends FallbackDukascopyCache {
     }
 
     @Override
+    public BarCache createBarCache(Validator validator, DukascopyTickSearch tickSearch) {
+        return new LocalBarCache(getFallback().createBarCache(validator, tickSearch));
+    }
+
+    @Override
     protected void saveToCache(String dukascopyPath, InputStream input) throws IOException {
-        Path cachePath = Path.of(CACHE_DIR.toString(), dukascopyPath);
-        //noinspection ResultOfMethodCallIgnored
-        cachePath.toFile().getParentFile().mkdirs();
-        Files.copy(input, cachePath);
+        saveLocal(dukascopyPath, input);
     }
 
     @Override
     protected InputStream checkCache(String dukascopyPath) throws IOException {
-        final File file = Path.of(CACHE_DIR.toString(), dukascopyPath).toFile();
+        return checkLocal(dukascopyPath);
+    }
+
+    private final class LocalBarCache extends FallbackBarCache {
+        private LocalBarCache(BarCache fallbackBarCache) {
+            super(fallbackBarCache);
+        }
+
+        @Override
+        protected void saveToCache(BarCriteria criteria,
+                                   String dukascopyPath,
+                                   List<Bar> oneDayOfBars) throws IOException {
+            saveLocal(createBarPath(criteria, dukascopyPath), toJsonStream(mapper, oneDayOfBars));
+        }
+
+        @Override
+        protected List<Bar> checkCache(BarCriteria criteria, String dukascopyPath) throws IOException {
+            InputStream inputStream = checkLocal(createBarPath(criteria, dukascopyPath));
+            return inputStream == null ? null : fromJsonStream(mapper, inputStream);
+        }
+    }
+
+    private void saveLocal(String path, InputStream input) throws IOException {
+        Path cachePath = Path.of(cacheDirectory.toString(), path);
+        //noinspection ResultOfMethodCallIgnored
+        cachePath.toFile().getParentFile().mkdirs();
+        Files.copy(input, cachePath);
+        log.debug("Saved {} in local cache {}", path, cachePath);
+    }
+
+    private InputStream checkLocal(String path) throws FileNotFoundException {
+        final File file = Path.of(cacheDirectory.toString(), path).toFile();
         if (file.isFile()) {
             log.debug("Found in local cache {}", file);
             return new FileInputStream(file);

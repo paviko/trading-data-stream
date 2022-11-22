@@ -22,7 +22,6 @@ import com.limemojito.trading.model.TradingSearch;
 import com.limemojito.trading.model.bar.Bar;
 import com.limemojito.trading.model.bar.Bar.Period;
 import com.limemojito.trading.model.bar.BarInputStreamToCsv;
-import com.limemojito.trading.model.tick.dukascopy.DukascopyCache;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
@@ -32,6 +31,7 @@ import org.springframework.stereotype.Component;
 import java.io.File;
 import java.io.FileWriter;
 import java.time.Instant;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -39,8 +39,6 @@ import java.time.Instant;
 public class DataStreamRunner implements ApplicationRunner {
 
     private final TradingSearch tradingSearch;
-    private final DukascopyCache cache;
-
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
@@ -54,7 +52,8 @@ public class DataStreamRunner implements ApplicationRunner {
              BarInputStreamToCsv barsToCsv = new BarInputStreamToCsv(bars, new FileWriter(outputFile))) {
             barsToCsv.convert();
         }
-        log.info(cache.cacheStats());
+        log.info("Wrote to file://{}", outputFile);
+        log.info(tradingSearch.cacheStats());
     }
 
     private Instant getRequiredValueInstant(ApplicationArguments args, String name) {
@@ -65,6 +64,10 @@ public class DataStreamRunner implements ApplicationRunner {
         if (!args.containsOption(name)) {
             throw new IllegalArgumentException("Missing command line argument --" + name + "=????");
         }
-        return args.getOptionValues(name).get(0);
+        List<String> optionValues = args.getOptionValues(name);
+        if (optionValues.isEmpty()) {
+            throw new IllegalArgumentException("No value for command line argument --" + name + " Are you missing = ?");
+        }
+        return optionValues.get(0);
     }
 }

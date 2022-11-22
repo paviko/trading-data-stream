@@ -1,0 +1,12 @@
+{
+  "startMillisecondsUtc": 1528174800000,
+  "streamId": "00000000-0000-0000-0000-000000000000",
+  "period": "H1",
+  "symbol": "EURUSD",
+  "open": 116568,
+  "high": 116939,
+  "low": 116500,
+  "close": 116935,
+  "source": "Historical",
+  "modelVersion": "1.0"
+}

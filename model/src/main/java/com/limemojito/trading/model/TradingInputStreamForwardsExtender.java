@@ -19,7 +19,6 @@ package com.limemojito.trading.model;
 
 import com.limemojito.trading.model.bar.Bar;
 import com.limemojito.trading.model.bar.BarVisitor;
-import com.limemojito.trading.model.tick.TickVisitor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
@@ -36,24 +35,33 @@ public final class TradingInputStreamForwardsExtender<Model> implements TradingI
     private int givenCount;
     private TradingInputStream<Model> dataStream;
 
+    /**
+     * Extend searches to complete stream.
+     *
+     * @param symbol        Symbol to search.
+     * @param period        Period to search.
+     * @param startTime     Start time to search.
+     * @param barCountAfter Number of bars to retrieve after start time
+     * @param barVisitor    Visitor to apply
+     * @param tradingSearch Search engine to use.
+     * @return a bar input stream
+     * @throws IOException on an io failure.
+     */
     public static TradingInputStream<Bar> extend(String symbol,
                                                  Bar.Period period,
                                                  Instant startTime,
                                                  int barCountAfter,
                                                  BarVisitor barVisitor,
-                                                 TickVisitor tickVisitor,
                                                  TradingSearch tradingSearch) throws IOException {
         return new TradingInputStreamForwardsExtender<>(barCountAfter, (searchCount) -> {
             final Duration duration = period.getDuration().multipliedBy(barCountAfter);
             final Instant start = startTime.plus(duration.multipliedBy(searchCount));
-            final Instant end = startTime.plus(duration.multipliedBy(searchCount + 1))
-                                         .minusNanos(1);
+            final Instant end = startTime.plus(duration.multipliedBy(searchCount + 1));
             return tradingSearch.aggregateFromTicks(symbol,
                                                     period,
                                                     start,
                                                     end,
-                                                    barVisitor,
-                                                    tickVisitor);
+                                                    barVisitor);
         });
     }
 

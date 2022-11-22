@@ -74,10 +74,11 @@ public abstract class TradingCsvStream<Model> implements AutoCloseable {
         String modelName = UNKNOWN;
         while (inputStream.hasNext()) {
             Model next = inputStream.next();
+            count++;
             modelName = determineModelName(modelName, next);
             printer.printRecord(formatIntercept(modelToFields(next)));
         }
-        log.info("Converted {} {}}", count, modelName);
+        log.info("Converted {} {}(s)", count, modelName);
     }
 
     /**

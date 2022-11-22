@@ -17,18 +17,46 @@
 
 package com.limemojito.trading.model;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.limemojito.test.JsonLoader;
 import com.limemojito.trading.model.StreamData.StreamSource;
 import com.limemojito.trading.model.bar.Bar;
 import com.limemojito.trading.model.tick.Tick;
+import com.limemojito.trading.model.tick.dukascopy.DukascopyUtils;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import static com.limemojito.trading.model.StreamData.REALTIME_UUID;
 import static com.limemojito.trading.model.StreamData.StreamSource.Historical;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ModelPrototype {
+
+    private static final ObjectMapper OBJECT_MAPPER = DukascopyUtils.setupObjectMapper();
+    private static final JsonLoader JSON_LOADER = new JsonLoader(OBJECT_MAPPER);
+
+    public static String toJson(List<Bar> bars) throws JsonProcessingException {
+        return OBJECT_MAPPER.writeValueAsString(bars);
+    }
+
+    public static List<Bar> loadBars(String resourcePath) throws IOException {
+        return JSON_LOADER.loadFrom(resourcePath, new TypeReference<>() {
+        });
+    }
+
+    public static InputStream loadStream(String resourcePath) {
+        InputStream resourceAsStream = ModelPrototype.class.getResourceAsStream(resourcePath);
+        assertThat(resourceAsStream).withFailMessage("Could not load %s", resourcePath)
+                                    .isNotNull();
+        return resourceAsStream;
+    }
+
     public static Bar createBar(UUID uuid, String symbol, Bar.Period period, long startMillisecondsUtc) {
         return Bar.builder()
                   .startMillisecondsUtc(startMillisecondsUtc)
