@@ -11,7 +11,7 @@ Library
 <dependency>
     <groupId>com.limemojito.oss.trading.trading-data-stream</groupId>
     <artifactId>model</artifactId>
-    <version>2.0.0</version>
+    <version>2.0.1</version>
 </dependency>
 ```
 
@@ -20,6 +20,8 @@ Check out the source to see a working example in example-cli (Spring Boot comman
 ---
 
 # Changes
+## 2.0.1
+* Added locking around local and s3 cache usage for multithreaded scenarios.
 
 ## 2.0.0
 
@@ -77,7 +79,7 @@ this produces the model jar, example-cli and a cache primer application.
 *note* that files are cached locally in ~/.dukascopy-cache. See LocalDukascopyCache.java for details.
 
 ```
-java -jar example-cli/target/example-cli-2.0.0.jar --symbol=NZDUSD --period=M5 \
+java -jar example-cli/target/example-cli-2.0.1.jar --symbol=NZDUSD --period=M5 \
   --start=2018-01-02T00:00:00Z --end=2018-01-02T00:59:59Z --output=test-nz.csv  
 ```
 
@@ -89,7 +91,7 @@ See S3DukascopyCache.java and the chain configuration in DataStreamCli.java for 
 
 ```
 aws s3 mb s3://test-tick-bucket
-java -jar example-cli/target/example-cli-2.0.0.jar --spring.profiles.active=s3 \
+java -jar example-cli/target/example-cli-2.0.1.jar --spring.profiles.active=s3 \
   --bucket-name=test-tick-bucket --symbol=AUDUSD --period=M5 --start=2018-01-02T00:00:00Z \
   --end=2018-01-02T00:59:59Z --output=test-au.csv  
 ```
@@ -97,7 +99,7 @@ java -jar example-cli/target/example-cli-2.0.0.jar --spring.profiles.active=s3 \
 ## Prime a local cache with AUDUSD and EURUSD 2 months
 
 ```
-java -jar cache-primer/target/cache-primer-2.0.0.jar --symbol=AUDUSD --symbol EURUSD \
+java -jar cache-primer/target/cache-primer-2.0.1.jar --symbol=AUDUSD --symbol EURUSD \
   --start=2018-01-01T00:00:00Z --end=2018-03-01T00:59:59Z  
 ```
 
@@ -108,7 +110,7 @@ See S3DukascopyCache.java and the chain configuration in CachePrimer.java for de
 
 ```
 aws s3 mb s3://test-tick-bucket
-java -jar cache-primer/target/cache-primer-2.0.0.jar --spring.profiles.active=s3 \
+java -jar cache-primer/target/cache-primer-2.0.1.jar --spring.profiles.active=s3 \
   --bucket-name=test-tick-bucket --symbol=AUDUSD --symbol EURUSD \
   --start=2018-01-01T00:00:00Z --end=2018-03-01T00:59:59Z  
 ```
@@ -145,7 +147,7 @@ Run on an M1 Max with 100MB internet retrieving 559 M10 bars. Your performance m
 Worst case is dependent on how many days of H1 tick files are required to answer query.
 
 ```
-java -jar example-cli/target/example-cli-2.0.0.jar --symbol=EURUSD --period=M10 \
+java -jar example-cli/target/example-cli-2.0.1.jar --symbol=EURUSD --period=M10 \
 --start="2019-05-07T00:00:00Z" --end="2019-05-11T00:00:00Z" --output=./test.csv
 ```
 

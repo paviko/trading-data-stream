@@ -124,21 +124,28 @@ public class LocalDukascopyCache extends FallbackDukascopyCache {
         }
     }
 
-    private void saveLocal(String path, InputStream input) throws IOException {
-        Path cachePath = Path.of(cacheDirectory.toString(), path);
-        //noinspection ResultOfMethodCallIgnored
-        cachePath.toFile().getParentFile().mkdirs();
-        Files.copy(input, cachePath);
-        log.debug("Saved {} in local cache {}", path, cachePath);
+    private synchronized void saveLocal(String path, InputStream input) throws IOException {
+        if (!unsafeIsPresent(path)) {
+            Path cachePath = Path.of(cacheDirectory.toString(), path);
+            //noinspection ResultOfMethodCallIgnored
+            cachePath.toFile().getParentFile().mkdirs();
+            Files.copy(input, cachePath);
+            log.debug("Saved {} in local cache {}", path, cachePath);
+        }
     }
 
-    private InputStream checkLocal(String path) throws FileNotFoundException {
-        final File file = Path.of(cacheDirectory.toString(), path).toFile();
-        if (file.isFile()) {
+    private synchronized InputStream checkLocal(String path) throws FileNotFoundException {
+        boolean present = unsafeIsPresent(path);
+        if (present) {
+            File file = Path.of(cacheDirectory.toString(), path).toFile();
             log.debug("Found in local cache {}", file);
             return new FileInputStream(file);
         }
         return null;
+    }
+
+    private boolean unsafeIsPresent(String path) {
+        return Path.of(cacheDirectory.toString(), path).toFile().isFile();
     }
 
 }

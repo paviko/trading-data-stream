@@ -94,25 +94,31 @@ public class S3DukascopyCache extends FallbackDukascopyCache {
 
     }
 
-    private void saveToS3(String path, InputStream input, String contentType) throws IOException {
-        final byte[] bytes = IOUtils.toByteArray(input);
-        final ObjectMetadata metadata = new ObjectMetadata();
-        metadata.setContentLength(bytes.length);
-        metadata.setContentType(contentType);
-        metadata.setContentDisposition(path);
-        try (ByteArrayInputStream s3Input = new ByteArrayInputStream(bytes)) {
-            log.info("Saving to s3://{}/{}", bucketName, path);
-            s3.putObject(new PutObjectRequest(bucketName, path, s3Input, metadata));
+    private synchronized void saveToS3(String path, InputStream input, String contentType) throws IOException {
+        if (!unsafeIsPresent(path)) {
+            final byte[] bytes = IOUtils.toByteArray(input);
+            final ObjectMetadata metadata = new ObjectMetadata();
+            metadata.setContentLength(bytes.length);
+            metadata.setContentType(contentType);
+            metadata.setContentDisposition(path);
+            try (ByteArrayInputStream s3Input = new ByteArrayInputStream(bytes)) {
+                log.info("Saving to s3://{}/{}", bucketName, path);
+                s3.putObject(new PutObjectRequest(bucketName, path, s3Input, metadata));
+            }
         }
     }
 
-    private S3ObjectInputStream checkS3(String path) {
-        if (s3.doesObjectExist(bucketName, path)) {
+    private synchronized S3ObjectInputStream checkS3(String path) {
+        if (unsafeIsPresent(path)) {
             log.info("Retrieving s3://{}/{}", bucketName, path);
             return s3.getObject(bucketName, path).getObjectContent();
         } else {
             return null;
         }
+    }
+
+    private boolean unsafeIsPresent(String path) {
+        return s3.doesObjectExist(bucketName, path);
     }
 }
 

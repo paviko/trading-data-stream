@@ -52,6 +52,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
@@ -152,7 +153,8 @@ public class S3DukascopyCacheTest {
 
         assertThat(bar.size()).isGreaterThan(0);
         verify(fallbackMock).createBarCache(validator, tickSearch);
-        verify(s3).doesObjectExist(eq(bucketName), anyString());
+        // twice as we check around sync lock.
+        verify(s3, times(2)).doesObjectExist(eq(bucketName), anyString());
         verify(fallbackBarCache).getOneDayOfTicksAsBar(criteria, paths);
         PutObjectRequest request = putRequestCaptor.getValue();
         assertThat(request.getBucketName()).isEqualTo(bucketName);
