@@ -41,7 +41,8 @@ public class TradingInputJsonStreams {
         outputStream.write("[".getBytes(UTF_8));
         while (inputStream.hasNext()) {
             Model next = inputStream.next();
-            mapper.writeValue(outputStream, next);
+            // work around auto-close if jackson passed a stream.
+            outputStream.write(mapper.writeValueAsBytes(next));
             if (inputStream.hasNext()) {
                 outputStream.write(",".getBytes(UTF_8));
             }
@@ -69,6 +70,7 @@ public class TradingInputJsonStreams {
         private Model peek;
 
         JsonTradingInputStream(InputStream inputStream, ObjectMapper mapper, Class<Model> type) throws IOException {
+            // work around auto-close if jackson passed a stream.
             this.jsonParser = mapper.createParser(inputStream);
             this.type = type;
         }
