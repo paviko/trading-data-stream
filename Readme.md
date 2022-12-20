@@ -11,7 +11,7 @@ Library
 <dependency>
     <groupId>com.limemojito.oss.trading.trading-data-stream</groupId>
     <artifactId>model</artifactId>
-    <version>2.0.1</version>
+    <version>2.0.2</version>
 </dependency>
 ```
 
@@ -20,6 +20,9 @@ Check out the source to see a working example in example-cli (Spring Boot comman
 ---
 
 # Changes
+## 2.0.2
+* Support for streaming JSON file formats (as arrays) using TradingInputJsonStreams.  Relies on Jackson.
+
 ## 2.0.1
 * Added locking around local and s3 cache usage for multithreaded scenarios.
 
