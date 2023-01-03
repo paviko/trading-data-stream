@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 Lime Mojito Pty Ltd
+ * Copyright 2011-2023 Lime Mojito Pty Ltd
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -28,16 +28,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.validation.Validator;
-import java.util.List;
 import java.util.NoSuchElementException;
 
 import static com.limemojito.trading.model.bar.Bar.Period.M5;
 import static com.limemojito.trading.model.tick.dukascopy.DukascopyUtils.setupValidator;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class TickToBarInputStreamTest {
