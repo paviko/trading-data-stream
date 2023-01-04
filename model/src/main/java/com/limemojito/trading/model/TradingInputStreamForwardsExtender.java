@@ -56,7 +56,7 @@ public final class TradingInputStreamForwardsExtender<Model> implements TradingI
         return new TradingInputStreamForwardsExtender<>(barCountAfter, (searchCount) -> {
             final Duration duration = period.getDuration().multipliedBy(barCountAfter);
             final Instant start = startTime.plus(duration.multipliedBy(searchCount));
-            final Instant end = startTime.plus(duration.multipliedBy(searchCount + 1));
+            final Instant end = startTime.plus(duration.multipliedBy(searchCount + 1)).minusNanos(1);
             return tradingSearch.aggregateFromTicks(symbol,
                                                     period,
                                                     start,

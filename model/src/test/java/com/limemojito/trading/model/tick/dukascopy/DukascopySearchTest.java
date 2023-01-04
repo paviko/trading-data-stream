@@ -32,11 +32,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import static com.limemojito.trading.model.bar.Bar.Period.H1;
-import static com.limemojito.trading.model.bar.Bar.Period.H4;
-import static com.limemojito.trading.model.bar.Bar.Period.M10;
-import static com.limemojito.trading.model.bar.Bar.Period.M30;
-import static com.limemojito.trading.model.bar.Bar.Period.M5;
+import static com.limemojito.trading.model.bar.Bar.Period.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -144,21 +140,36 @@ public class DukascopySearchTest {
     }
 
     @Test
+    public void shouldNotHaveDuplicateBarsInReverse() throws Exception {
+        try (TradingInputStream<Bar> bars = search.aggregateFromTicks("EURUSD", H1, 80, Instant.parse("2019-07-07T16:00:00Z"))) {
+            assertStreamOk(bars, 80);
+        }
+    }
+
+    @Test
+    public void shouldNotHaveDuplicateBarsInForward() throws Exception {
+        try (TradingInputStream<Bar> bars = search.aggregateFromTicks("EURUSD", H1, Instant.parse("2019-07-07T16:00:00Z"), 80)) {
+            assertStreamOk(bars, 80);
+        }
+    }
+
+    @Test
     public void shouldStopAtTheBeginningOfTime() throws Exception {
-        int expectedBarCount = 6;
+        int expectedBarCount = 5;
         List<Bar> bars;
         try (TradingInputStream<Bar> stream = search.aggregateFromTicks("EURUSD",
                                                                         H1,
                                                                         100,
-                                                                        // note bar rounding adds a bar here.
+                                                                        // end time is EXCLUSIVE
                                                                         Instant.parse("2010-01-01T05:00:00Z"))) {
             bars = stream.stream().collect(Collectors.toList());
         }
         assertThat(bars).hasSize(expectedBarCount);
         // this has run over a weekend gap
         assertThat(bars.get(0).getStartInstant()).isEqualTo("2010-01-01T00:00:00Z");
-        assertThat(bars.get(expectedBarCount - 1).getStartInstant()).isEqualTo("2010-01-01T05:00:00Z");
+        assertThat(bars.get(expectedBarCount - 1).getStartInstant()).isEqualTo("2010-01-01T04:00:00Z");
     }
+
     @Test
     public void shouldCountBackwardsWithBarVisitor() throws Exception {
         int expectedBarCount = 5;
@@ -167,7 +178,7 @@ public class DukascopySearchTest {
                                                                         expectedBarCount,
                                                                         Instant.parse("2019-04-08T18:00:00Z"),
                                                                         bar -> log.info("Visited {}", bar))) {
-            assertThat(stream.stream().count()).isEqualTo(expectedBarCount);
+            assertStreamOk(stream, expectedBarCount);
         }
     }
 
@@ -179,25 +190,25 @@ public class DukascopySearchTest {
                                                                         Instant.parse("2019-04-08T13:00:00Z"),
                                                                         expectedBarCount,
                                                                         bar -> log.info("Visited {}", bar))) {
-            assertThat(stream.stream().count()).isEqualTo(expectedBarCount);
+            assertStreamOk(stream, expectedBarCount);
         }
     }
 
     @Test
     public void shouldSearchForTicksAndFilter() throws Exception {
-        searchTicksExpect("EURUSD", "2020-01-02T00:00:00Z", "2020-01-02T00:59:59Z", 1268L);
-        searchTicksExpect("USDJPY", "2020-01-02T00:00:00Z", "2020-01-02T00:59:59Z", 994L);
-        searchTicksExpect("EURUSD", "2020-01-02T00:00:00Z", "2020-01-02T00:29:59Z", 717L);
+        searchTicksExpect("EURUSD", "2020-01-02T00:00:00Z", "2020-01-02T00:59:59Z", 1268);
+        searchTicksExpect("USDJPY", "2020-01-02T00:00:00Z", "2020-01-02T00:59:59Z", 994);
+        searchTicksExpect("EURUSD", "2020-01-02T00:00:00Z", "2020-01-02T00:29:59Z", 717);
     }
 
     @Test
     public void shouldHandleMultiStream() throws Exception {
-        searchTicksExpect("EURUSD", "2020-01-03T00:00:00Z", "2020-01-04T00:59:59Z", 87468L);
+        searchTicksExpect("EURUSD", "2020-01-03T00:00:00Z", "2020-01-04T00:59:59Z", 87468);
     }
 
     @Test
     public void shouldHandleExpansionToEndOfSeconds() throws Exception {
-        long expectedIncludingEnd = 1268L;
+        int expectedIncludingEnd = 1268;
         searchTicksExpect("EURUSD", "2020-01-02T00:00:00Z", "2020-01-02T00:59:59Z", expectedIncludingEnd);
         searchTicksExpect("EURUSD", "2020-01-02T00:00:00Z", "2020-01-02T00:59:59.999Z", expectedIncludingEnd);
 
@@ -241,16 +252,25 @@ public class DukascopySearchTest {
                                                                         period,
                                                                         Instant.parse(start),
                                                                         Instant.parse(end))) {
-            assertThat(stream.stream().count()).isEqualTo(expected);
+            assertStreamOk(stream, expected);
         }
     }
 
-    private void searchTicksExpect(String symbol, String start, String end, long expected) throws IOException {
+    private void searchTicksExpect(String symbol, String start, String end, int expected) throws IOException {
         try (TradingInputStream<Tick> stream = search.search(symbol,
                                                              Instant.parse(start),
                                                              Instant.parse(end))) {
-            assertThat(stream.stream().count()).isEqualTo(expected);
+            assertStreamOk(stream, expected);
         }
+    }
+
+    private static <Model> void assertStreamOk(TradingInputStream<Model> stream, int expectedCount) {
+        List<Model> models = stream.stream().collect(Collectors.toList());
+        for (int i = 1; i < models.size(); i++) {
+            // check for duplicates
+            assertThat(models.get(i - 1)).isNotEqualTo(models.get(i));
+        }
+        assertThat(models).hasSize(expectedCount);
     }
 
     private static void assertArgumentFailure(String expectedMessage, ThrowableAssert.ThrowingCallable method) {

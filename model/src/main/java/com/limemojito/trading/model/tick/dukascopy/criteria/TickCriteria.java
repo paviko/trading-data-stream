@@ -22,7 +22,6 @@ import lombok.Value;
 import java.time.Instant;
 
 import static com.limemojito.trading.model.tick.dukascopy.criteria.Criteria.assertBeforeStart;
-import static com.limemojito.trading.model.tick.dukascopy.criteria.Criteria.roundEndDateSecond;
 
 @Value
 @SuppressWarnings("RedundantModifiersValueLombok")
@@ -31,7 +30,7 @@ public class TickCriteria implements Criteria {
         this.symbol = symbol;
         assertBeforeStart(start, end);
         this.start = start;
-        this.end = roundEndDateSecond(end);
+        this.end = Criteria.roundEndDateSecond(end);
     }
 
     private final String symbol;

@@ -57,7 +57,7 @@ public interface TradingSearch {
      *
      * @param symbol    Symbol to search on.
      * @param startTime Time to begin search at
-     * @param endTime   Time to end search at (inclusive)
+     * @param endTime   Time to end search at (exclusive)
      * @return Tick data matching the search request.
      * @throws IOException              on a data failure.
      * @throws IllegalArgumentException if the start time is &lt; the beginningOfTime.
@@ -74,7 +74,7 @@ public interface TradingSearch {
      *
      * @param symbol      Symbol to search on.
      * @param startTime   Time to begin search at
-     * @param endTime     Time to end search at (inclusive)
+     * @param endTime     Time to end search at (exclusive)
      * @param tickVisitor Visitor to apply as each tick is found.
      * @return Tick data matching the search request.
      * @throws IOException              on a data failure.
@@ -92,7 +92,7 @@ public interface TradingSearch {
      * @param symbol    Symbol to search on.
      * @param period    Period to aggregate ticks to.
      * @param startTime Time to begin search at
-     * @param endTime   Time to end search at (inclusive)
+     * @param endTime   Time to end search at (exclusive)
      * @return Bar data matching the search request.
      * @throws IOException              on a data failure.
      * @throws IllegalArgumentException if the start time is &lt; the beginningOfTime.
@@ -111,7 +111,7 @@ public interface TradingSearch {
      * @param symbol     Symbol to search on.
      * @param period     Period to aggregate ticks to.
      * @param startTime  Time to begin search at
-     * @param endTime    Time to end search at (inclusive)
+     * @param endTime    Time to end search at (exclusive)
      * @param barVisitor Visitor to apply as each bar is formed.
      * @return Bar data matching the search request.
      * @throws IOException              on a data failure.
@@ -130,7 +130,7 @@ public interface TradingSearch {
      * @param symbol         Symbol to search on.
      * @param period         Period to aggregate ticks to.
      * @param barCountBefore Number of bars to find before the end time.
-     * @param endTime        The time that the bar start instants must be before.
+     * @param endTime        The time that the bar start instants must be before (exclusive).
      * @return Bar data matching the search request or best effort before the end of time.
      * @throws IOException on a data failure.
      * @see #getTheBeginningOfTime()
@@ -152,7 +152,7 @@ public interface TradingSearch {
      * @param symbol         Symbol to search on.
      * @param period         Period to aggregate ticks to.
      * @param barCountBefore Number of bars to find before the end time.
-     * @param endTime        The time that the bar start instants must be before.
+     * @param endTime        The time that the bar start instants must be before (exclusive).
      * @param barVisitor     Visitor to apply as each bar is formed.
      * @return Bar data matching the search request or best effort before the end of time.
      * @throws IOException on a data failure.

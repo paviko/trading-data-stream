@@ -55,6 +55,7 @@ public class CriteriaTest {
         Instant start = Instant.parse("2009-01-02T00:04:22.33Z");
         Instant end = Instant.parse("2020-01-02T00:28:43.22Z");
 
+        // criteria EXPANDS to include period.
         Criteria criteria = new BarCriteria(symbol, M30, start, end);
 
         Instant roundedStart = criteria.getStart();

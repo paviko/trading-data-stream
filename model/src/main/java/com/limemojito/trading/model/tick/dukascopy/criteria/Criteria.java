@@ -28,17 +28,17 @@ public interface Criteria {
         }
     }
 
-    static Instant roundEndDateSecond(Instant updatedEnd) {
-        return updatedEnd.getNano() == 0
-                ? updatedEnd.plusSeconds(1).minusNanos(1)
-                : updatedEnd;
-    }
-
     static Instant roundEndInstant(Bar.Period period, Instant end) {
         Instant updatedEnd = period.round(end.plus(period.getDuration()));
         // if 12:45:33 we need to expand to cover the end of second.
         updatedEnd = roundEndDateSecond(updatedEnd.minusSeconds(1));
         return updatedEnd;
+    }
+
+    static Instant roundEndDateSecond(Instant updatedEnd) {
+        return updatedEnd.getNano() == 0
+                ? updatedEnd.plusSeconds(1).minusNanos(1)
+                : updatedEnd;
     }
 
     static Instant roundStart(Bar.Period period, Instant start) {
