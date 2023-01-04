@@ -11,7 +11,7 @@ Library
 <dependency>
     <groupId>com.limemojito.oss.trading.trading-data-stream</groupId>
     <artifactId>model</artifactId>
-    <version>2.0.4</version>
+    <version>2.0.5</version>
 </dependency>
 ```
 
@@ -20,6 +20,9 @@ Check out the source to see a working example in example-cli (Spring Boot comman
 ---
 
 # Changes
+## 2.0.5
+* Spotted fix for hasNext in TradingInputJsonStreams.  Fix ported from closed source.
+
 ## 2.0.4
 * Correct aggregation bug in count before and count after bar searches.  A duplicate bar may have been included in streams due to
 some end searching being inclusive.

@@ -66,8 +66,8 @@ public class TradingInputJsonStreams {
      * @param <Model>     Model object to read (needs to be "Jsonable").
      * @param inputStream Model stream to read
      * @param type        class instance of the expected model type (to support Jackson json read).
-     * @throws IOException on a creation failure.
      * @return An input stream ready to stream read data.
+     * @throws IOException on a creation failure.
      */
     public <Model> TradingInputStream<Model> createStream(InputStream inputStream, Class<Model> type) throws IOException {
         return new JsonTradingInputStream<>(inputStream, mapper, type);
@@ -99,6 +99,9 @@ public class TradingInputJsonStreams {
 
         @Override
         public boolean hasNext() {
+            if (peek != null) {
+                return true;
+            }
             peek();
             return peek != null;
         }
