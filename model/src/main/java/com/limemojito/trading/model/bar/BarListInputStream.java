@@ -18,37 +18,36 @@
 package com.limemojito.trading.model.bar;
 
 import com.limemojito.trading.model.TradingInputStream;
+import com.limemojito.trading.model.stream.TradingInputStreamMapper;
 
-import java.util.Iterator;
+import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
 
 /**
- * Adapts an in memory list of bars to an trading input stream.
+ * Adapts an in memory list of bars to a trading input stream.
+ *
+ * @see TradingInputStreamMapper for generic versions.
  */
 public class BarListInputStream implements TradingInputStream<Bar> {
-    private final Iterator<Bar> iterator;
-    private final BarVisitor barVisitor;
+    private final TradingInputStream<Bar> delegate;
 
     public BarListInputStream(List<Bar> barList, BarVisitor barVisitor) {
-        this.iterator = barList.iterator();
-        this.barVisitor = barVisitor;
+        this.delegate = TradingInputStreamMapper.streamFrom(barList, barVisitor);
     }
 
     @Override
     public Bar next() throws NoSuchElementException {
-        Bar bar = iterator.next();
-        barVisitor.visit(bar);
-        return bar;
+        return delegate.next();
     }
 
     @Override
     public boolean hasNext() {
-        return iterator.hasNext();
+        return delegate.hasNext();
     }
 
     @Override
-    public void close() {
-
+    public void close() throws IOException {
+        delegate.close();
     }
 }

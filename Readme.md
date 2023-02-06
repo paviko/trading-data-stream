@@ -11,7 +11,7 @@ Library
 <dependency>
     <groupId>com.limemojito.oss.trading.trading-data-stream</groupId>
     <artifactId>model</artifactId>
-    <version>2.0.5</version>
+    <version>2.1.0</version>
 </dependency>
 ```
 
@@ -20,6 +20,19 @@ Check out the source to see a working example in example-cli (Spring Boot comman
 ---
 
 # Changes
+
+## 2.1.0
+### Breaking API changes
+* Moved generic stream classes into trading.model.streams package.
+* There are some minor API changes such as adding IOException to close methods where missed.
+
+### Other Changes
+* Reworked stream model and produced a set of generic input stream utilities in trading.model.stream.
+* Added a stream Collection method to TradingJsonStreams, prefer the InputStream version for efficiency.
+* trading.model.stream.TradingInputStreamMapper produces generic streams and transforms for any MODEL.
+* trading.model.stream.TradingInputStreamMapper has overloads for onClose Runnable for cleanup operations.
+
+
 ## 2.0.5
 * Spotted fix for hasNext in TradingInputJsonStreams.  Fix ported from closed source.
 

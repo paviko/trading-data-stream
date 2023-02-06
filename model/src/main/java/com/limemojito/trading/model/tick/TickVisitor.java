@@ -17,9 +17,9 @@
 
 package com.limemojito.trading.model.tick;
 
-public interface TickVisitor {
+import com.limemojito.trading.model.stream.TradingInputStreamMapper;
+
+public interface TickVisitor extends TradingInputStreamMapper.Visitor<Tick> {
     TickVisitor NO_VISITOR = (tick) -> {
     };
-
-    void visit(Tick tick);
 }

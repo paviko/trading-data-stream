@@ -17,7 +17,7 @@
 
 package com.limemojito.trading.model.bar;
 
-import com.limemojito.trading.model.TradingCsvStream;
+import com.limemojito.trading.model.stream.TradingCsvStream;
 import com.limemojito.trading.model.TradingInputStream;
 import lombok.extern.slf4j.Slf4j;
 

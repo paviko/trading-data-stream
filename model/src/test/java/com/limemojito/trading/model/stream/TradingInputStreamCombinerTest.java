@@ -15,8 +15,9 @@
  *
  */
 
-package com.limemojito.trading.model;
+package com.limemojito.trading.model.stream;
 
+import com.limemojito.trading.model.TradingInputStream;
 import com.limemojito.trading.model.tick.Tick;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;

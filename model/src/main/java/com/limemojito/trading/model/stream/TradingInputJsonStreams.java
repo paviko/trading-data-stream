@@ -15,12 +15,13 @@
  *
  */
 
-package com.limemojito.trading.model;
+package com.limemojito.trading.model.stream;
 
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.limemojito.trading.model.TradingInputStream;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Component;
@@ -28,6 +29,8 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -39,6 +42,20 @@ public class TradingInputJsonStreams {
 
     /**
      * Write the supplied input stream to the output stream using Jackson in ARRAY format.  The output is a streamed write one model object
+     * at a time.  Note there is a streaming version of this method which would be more efficient than loading a collection into memory.
+     * @see #writeAsJsonArray(TradingInputStream, OutputStream)
+     *
+     * @param <Model>      Model object to write (needs to be "Jsonable").
+     * @param collection  Collection to stream data from.
+     * @param outputStream output stream to write to.
+     * @throws IOException on an IO failure.
+     */
+    public <Model> void writeAsJsonArray(Collection<Model> collection, OutputStream outputStream) throws IOException {
+        writeFromIterator(outputStream, collection.iterator());
+    }
+
+    /**
+     * Write the supplied input stream to the output stream using Jackson in ARRAY format.  The output is a streamed write one model object
      * at a time.
      *
      * @param <Model>      Model object to write (needs to be "Jsonable").
@@ -47,16 +64,7 @@ public class TradingInputJsonStreams {
      * @throws IOException on an IO failure.
      */
     public <Model> void writeAsJsonArray(TradingInputStream<Model> inputStream, OutputStream outputStream) throws IOException {
-        outputStream.write("[".getBytes(UTF_8));
-        while (inputStream.hasNext()) {
-            Model next = inputStream.next();
-            // work around auto-close if jackson passed a stream.
-            outputStream.write(mapper.writeValueAsBytes(next));
-            if (inputStream.hasNext()) {
-                outputStream.write(",".getBytes(UTF_8));
-            }
-        }
-        outputStream.write("]".getBytes(UTF_8));
+        writeFromIterator(outputStream, inputStream.iterator());
     }
 
     /**
@@ -71,6 +79,19 @@ public class TradingInputJsonStreams {
      */
     public <Model> TradingInputStream<Model> createStream(InputStream inputStream, Class<Model> type) throws IOException {
         return new JsonTradingInputStream<>(inputStream, mapper, type);
+    }
+
+    private <Model> void writeFromIterator(OutputStream outputStream, Iterator<Model> iterator) throws IOException {
+        outputStream.write("[".getBytes(UTF_8));
+        while (iterator.hasNext()) {
+            Model next = iterator.next();
+            // work around auto-close if jackson passed a stream.
+            outputStream.write(mapper.writeValueAsBytes(next));
+            if (iterator.hasNext()) {
+                outputStream.write(",".getBytes(UTF_8));
+            }
+        }
+        outputStream.write("]".getBytes(UTF_8));
     }
 
     private static class JsonTradingInputStream<Model> implements TradingInputStream<Model> {

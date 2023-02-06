@@ -15,12 +15,14 @@
  *
  */
 
-package com.limemojito.trading.model;
+package com.limemojito.trading.model.stream;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.limemojito.test.JsonAsserter;
 import com.limemojito.test.ObjectMapperPrototype;
+import com.limemojito.trading.model.ModelPrototype;
+import com.limemojito.trading.model.TradingInputStream;
 import com.limemojito.trading.model.bar.Bar;
 import com.limemojito.trading.model.bar.BarListInputStream;
 import com.limemojito.trading.model.bar.BarVisitor;
@@ -35,8 +37,7 @@ import java.util.stream.Collectors;
 
 import static com.limemojito.trading.model.StreamData.REALTIME_UUID;
 import static com.limemojito.trading.model.StreamData.StreamSource.Historical;
-import static com.limemojito.trading.model.bar.Bar.Period.H1;
-import static com.limemojito.trading.model.bar.Bar.Period.M15;
+import static com.limemojito.trading.model.bar.Bar.Period.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -69,6 +70,16 @@ public class TradingInputJsonStreamsTest {
         List<Bar> bars = ModelPrototype.createBarListDescending(REALTIME_UUID, "CHFUSD", M15, 1638319200000L, 34);
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             jsonStreams.writeAsJsonArray(new BarListInputStream(bars, BarVisitor.NO_VISITOR), outputStream);
+            List<Bar> reconstituted = mapper.readValue(outputStream.toByteArray(), barListType);
+            assertThat(reconstituted).isEqualTo(bars);
+        }
+    }
+
+    @Test
+    public void shouldWriteCollectionToJsonArray() throws Exception {
+        List<Bar> bars = ModelPrototype.createBarListDescending(REALTIME_UUID, "AUDUSD", H4, 1638319200000L, 34);
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            jsonStreams.writeAsJsonArray(bars, outputStream);
             List<Bar> reconstituted = mapper.readValue(outputStream.toByteArray(), barListType);
             assertThat(reconstituted).isEqualTo(bars);
         }

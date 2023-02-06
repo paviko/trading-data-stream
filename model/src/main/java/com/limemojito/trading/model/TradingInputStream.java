@@ -18,6 +18,7 @@
 package com.limemojito.trading.model;
 
 import com.google.common.collect.Streams;
+import com.limemojito.trading.model.stream.TradingInputStreamCombiner;
 import lombok.RequiredArgsConstructor;
 
 import java.io.Closeable;

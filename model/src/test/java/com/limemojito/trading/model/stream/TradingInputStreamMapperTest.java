@@ -15,11 +15,14 @@
  *
  */
 
-package com.limemojito.trading.model.bar;
+package com.limemojito.trading.model.stream;
 
-import com.limemojito.trading.model.stream.TradingInputStreamMapper;
+import org.junit.jupiter.api.Test;
 
-public interface BarVisitor extends TradingInputStreamMapper.Visitor<Bar> {
-    BarVisitor NO_VISITOR = (bar) -> {
-    };
+public class TradingInputStreamMapperTest {
+    @Test
+    public void shouldCover() {
+        new TradingInputStreamMapper() {
+        };
+    }
 }

@@ -15,8 +15,9 @@
  *
  */
 
-package com.limemojito.trading.model;
+package com.limemojito.trading.model.stream;
 
+import com.limemojito.trading.model.TradingInputStream;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -38,7 +39,7 @@ public class TradingInputStreamCombiner<Model> implements TradingInputStream<Mod
      * @param filter               filter to apply
      * @see TradingInputStream
      */
-    TradingInputStreamCombiner(Iterator<TradingInputStream<Model>> inputStreamsIterator,
+    public TradingInputStreamCombiner(Iterator<TradingInputStream<Model>> inputStreamsIterator,
                                Predicate<Model> filter) {
         this.inputStreamsIterator = inputStreamsIterator;
         this.filter = filter;

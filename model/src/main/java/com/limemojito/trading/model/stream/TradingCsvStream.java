@@ -15,8 +15,9 @@
  *
  */
 
-package com.limemojito.trading.model;
+package com.limemojito.trading.model.stream;
 
+import com.limemojito.trading.model.TradingInputStream;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;

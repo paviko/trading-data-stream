@@ -19,21 +19,15 @@ package com.limemojito.trading.model;
 
 import com.limemojito.trading.model.bar.Bar;
 import com.limemojito.trading.model.bar.BarVisitor;
-import lombok.SneakyThrows;
+import com.limemojito.trading.model.stream.TradingInputForwardSearchStream;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.NoSuchElementException;
 
 @Slf4j
-public final class TradingInputStreamForwardsExtender<Model> implements TradingInputStream<Model> {
-    private final int maxCount;
-    private final Search<Model> search;
-    private int searchCount;
-    private int givenCount;
-    private TradingInputStream<Model> dataStream;
+public final class TradingInputStreamForwardsExtender {
 
     /**
      * Extend searches to complete stream.
@@ -53,7 +47,7 @@ public final class TradingInputStreamForwardsExtender<Model> implements TradingI
                                                  int barCountAfter,
                                                  BarVisitor barVisitor,
                                                  TradingSearch tradingSearch) throws IOException {
-        return new TradingInputStreamForwardsExtender<>(barCountAfter, (searchCount) -> {
+        return new TradingInputForwardSearchStream<>(barCountAfter, (searchCount) -> {
             final Duration duration = period.getDuration().multipliedBy(barCountAfter);
             final Instant start = startTime.plus(duration.multipliedBy(searchCount));
             final Instant end = startTime.plus(duration.multipliedBy(searchCount + 1)).minusNanos(1);
@@ -63,48 +57,5 @@ public final class TradingInputStreamForwardsExtender<Model> implements TradingI
                                                     end,
                                                     barVisitor);
         });
-    }
-
-    private TradingInputStreamForwardsExtender(int maxCount, Search<Model> search) throws IOException {
-        this.maxCount = maxCount;
-        this.search = search;
-        this.dataStream = search.perform(0);
-    }
-
-    @Override
-    public void close() throws IOException {
-        dataStream.close();
-    }
-
-    @Override
-    public Model next() throws NoSuchElementException {
-        Model next = dataStream.next();
-        givenCount++;
-        return next;
-    }
-
-    @Override
-    @SneakyThrows
-    public boolean hasNext() {
-        if (givenCount < maxCount) {
-            if (dataStream.hasNext()) {
-                return true;
-            } else {
-                extendSearch();
-                return dataStream.hasNext();
-            }
-        }
-        return false;
-    }
-
-    private interface Search<Model> {
-        TradingInputStream<Model> perform(int searchCount) throws IOException;
-    }
-
-    private void extendSearch() throws IOException {
-        while (!dataStream.hasNext()) {
-            dataStream.close();
-            dataStream = search.perform(++searchCount);
-        }
     }
 }
