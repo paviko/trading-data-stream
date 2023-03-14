@@ -51,6 +51,7 @@ public final class TradingInputStreamForwardsExtender {
             final Duration duration = period.getDuration().multipliedBy(barCountAfter);
             final Instant start = startTime.plus(duration.multipliedBy(searchCount));
             final Instant end = startTime.plus(duration.multipliedBy(searchCount + 1)).minusNanos(1);
+            log.debug("Performing search between {} and {}", start, end);
             return tradingSearch.aggregateFromTicks(symbol,
                                                     period,
                                                     start,

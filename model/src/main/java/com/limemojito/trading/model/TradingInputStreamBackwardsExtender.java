@@ -74,6 +74,7 @@ public final class TradingInputStreamBackwardsExtender {
 
             @Override
             public TradingInputStream<Bar> perform() throws IOException {
+                log.debug("Performing search between {} and {}", start, end);
                 return tradingSearch.aggregateFromTicks(symbol,
                                                         period,
                                                         start,
