@@ -34,7 +34,7 @@ import org.springframework.context.annotation.Scope;
 import javax.validation.Validator;
 
 /**
- * An example Spring configuration with a local file cache.  You can replace the local cache chain with an S3->local->no-cache as well.
+ * An example Spring configuration with a local file cache.  You can replace the local cache chain with an S3-&gt;local-&gt;no-cache as well.
  *
  * @see com.limemojito.trading.model.tick.dukascopy.cache.S3DukascopyCache
  */
@@ -67,7 +67,9 @@ public class TradingDataStreamConfiguration {
      * A helper method for a quick standalone configuration (not in a spring container).  This should NOT be used in a spring container as it
      * generates a Validator, object mapper, etc and is primarily suited for testing.
      *
+     * @return A DukascopySearch backed TradingSearch instance using local file caching.
      * @see DukascopyUtils#standaloneSetup()
+     * @see DukascopySearch
      */
     public static TradingSearch standaloneSearch() {
         return DukascopyUtils.standaloneSetup();
