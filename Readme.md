@@ -7,7 +7,8 @@ information from using this software does NOT constitute financial advice.
 
 Library
 
-```
+```xml
+
 <dependency>
     <groupId>com.limemojito.oss.trading.trading-data-stream</groupId>
     <artifactId>model</artifactId>
@@ -17,39 +18,89 @@ Library
 
 Check out the source to see a working example in example-cli (Spring Boot command line).
 
+There is an example spring configuration in TradingDataStreamConfiguration suitable for @Import. We suggest the following dependencies for spring
+boot
+
+```xml
+
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-json</artifactId>
+</dependency>
+<dependency>
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-starter-validation</artifactId>
+</dependency>
+        <!-- For CSV usage -->
+<dependency>
+<groupId>org.apache.commons</groupId>
+<artifactId>commons-csv</artifactId>
+</dependency>
+        <!-- for S3 caching -->
+<dependency>
+<groupId>com.amazonaws</groupId>
+<artifactId>aws-java-sdk-s3</artifactId>
+</dependency>
+```
+
+# Java Tick Search Example
+
+This example is using the standalone configuration suitable for testing. For Spring container
+usage, please refer to TradingDataStreamConfiguration. Note the standalone setup should **not** be called in a spring container.
+
+```java
+TradingSearch search=TradingDataStreamConfiguration.standaloneSetup();
+try(TradingInputStream<Tick> ticks = search("EURUSD","2020-01-02T00:00:00Z","2020-01-02T00:59:59Z")){
+    ticks.stream()
+         .foreach(t -> log.info("{} {} bid: {}}, t.getMillisecondsUtc(), t.getSymbol(), t.getBid());
+}
+```
+
+Further examples at https://limemojito.com/reading-dukascopy-bi5-tick-history-with-the-tradingdata-stream-library-for-java/
+
 ---
 
 # Changes
+
+## 2.1.2
+* Added an example spring configuration.
 
 ## 2.1.1
 * Library updates.
 
 ## 2.1.0
+
 ### Breaking API changes
+
 * Moved generic stream classes into trading.model.streams package.
 * There are some minor API changes such as adding IOException to close methods where missed.
 
 ### Other Changes
+
 * Reworked stream model and produced a set of generic input stream utilities in trading.model.stream.
 * Added a stream Collection method to TradingJsonStreams, prefer the InputStream version for efficiency.
 * trading.model.stream.TradingInputStreamMapper produces generic streams and transforms for any MODEL.
 * trading.model.stream.TradingInputStreamMapper has overloads for onClose Runnable for cleanup operations.
 
-
 ## 2.0.5
-* Spotted fix for hasNext in TradingInputJsonStreams.  Fix ported from closed source.
+
+* Spotted fix for hasNext in TradingInputJsonStreams. Fix ported from closed source.
 
 ## 2.0.4
-* Correct aggregation bug in count before and count after bar searches.  A duplicate bar may have been included in streams due to
-some end searching being inclusive.
+
+* Correct aggregation bug in count before and count after bar searches. A duplicate bar may have been included in streams due to
+  some end searching being inclusive.
 
 ## 2.0.3
-* Correct write bug in JSON stream output that fails for large files with early close due to Jackson auto close.        
+
+* Correct write bug in JSON stream output that fails for large files with early close due to Jackson auto close.
 
 ## 2.0.2
-* Support for streaming JSON file formats (as arrays) using TradingInputJsonStreams.  Relies on Jackson.
+
+* Support for streaming JSON file formats (as arrays) using TradingInputJsonStreams. Relies on Jackson.
 
 ## 2.0.1
+
 * Added locking around local and s3 cache usage for multithreaded scenarios.
 
 ## 2.0.0
@@ -59,7 +110,7 @@ some end searching being inclusive.
 * Added bar caching that alters the cache storage and cache classes. Storage is backwards compatible however
   the construction of the caches has altered. Bar Caching produced repeated aggregations at 240X faster in our example
   in technical notes.
-* Due to bar caching tick visitors on aggregation queries are no longer supported. 
+* Due to bar caching tick visitors on aggregation queries are no longer supported.
 * Tick search functions **are** still supported for tick visitors.
 
 ### Other changes
@@ -97,7 +148,7 @@ some end searching being inclusive.
 
 # Quickstart
 
-```
+```shell
 mvn clean install
 ```
 
@@ -107,7 +158,7 @@ this produces the model jar, example-cli and a cache primer application.
 
 *note* that files are cached locally in ~/.dukascopy-cache. See LocalDukascopyCache.java for details.
 
-```
+```shell
 java -jar example-cli/target/example-cli-2.1.1.jar --symbol=NZDUSD --period=M5 \
   --start=2018-01-02T00:00:00Z --end=2018-01-02T00:59:59Z --output=test-nz.csv  
 ```
@@ -118,7 +169,7 @@ java -jar example-cli/target/example-cli-2.1.1.jar --symbol=NZDUSD --period=M5 \
 locally (~/.dukascopy-cache).
 See S3DukascopyCache.java and the chain configuration in DataStreamCli.java for details.
 
-```
+```shell
 aws s3 mb s3://test-tick-bucket
 java -jar example-cli/target/example-cli-2.1.1.jar --spring.profiles.active=s3 \
   --bucket-name=test-tick-bucket --symbol=AUDUSD --period=M5 --start=2018-01-02T00:00:00Z \
@@ -127,7 +178,7 @@ java -jar example-cli/target/example-cli-2.1.1.jar --spring.profiles.active=s3 \
 
 ## Prime a local cache with AUDUSD and EURUSD 2 months
 
-```
+```shell
 java -jar cache-primer/target/cache-primer-2.1.1.jar --symbol=AUDUSD --symbol EURUSD \
   --start=2018-01-01T00:00:00Z --end=2018-03-01T00:59:59Z  
 ```
@@ -137,7 +188,7 @@ java -jar cache-primer/target/cache-primer-2.1.1.jar --symbol=AUDUSD --symbol EU
 *note* this application cache chain is s3 <- local <- direct.
 See S3DukascopyCache.java and the chain configuration in CachePrimer.java for details.
 
-```
+```shell
 aws s3 mb s3://test-tick-bucket
 java -jar cache-primer/target/cache-primer-2.1.1.jar --spring.profiles.active=s3 \
   --bucket-name=test-tick-bucket --symbol=AUDUSD --symbol EURUSD \
@@ -175,15 +226,15 @@ Run on an M1 Max with 100MB internet retrieving 559 M10 bars. Your performance m
 559 bars to CSV shows a 240X improvement on repeated bar aggregations versus 3.6% worst case performance increase.
 Worst case is dependent on how many days of H1 tick files are required to answer query.
 
-```
+```shell
 java -jar example-cli/target/example-cli-2.1.1.jar --symbol=EURUSD --period=M10 \
 --start="2019-05-07T00:00:00Z" --end="2019-05-11T00:00:00Z" --output=./test.csv
 ```
 
-| Version |	Empty Cache Query Aggregation Time | Repeat Query Aggregation Time |
-| ------- | ---------------------------------- | -------------------------------- |
-|1.x | 55s | 12s |
-|2.0 | 57s | 0.05s |
+| Version | 	Empty Cache Query Aggregation Time | Repeat Query Aggregation Time |
+|---------|-------------------------------------|-------------------------------|
+| 1.x     | 55s                                 | 12s                           |
+| 2.0     | 57s                                 | 0.05s                         |
 
 ## Dukascopy Tick Data Exploration
 
@@ -237,12 +288,13 @@ This format is “valid” after experimentation.
 Note that epoch milliseconds is relative to UTC timezone.
 source is live | historical
 
-```
+```json
 {
-   "epochMilliseconds": 94875945798,
-   "symbol": "EURUSD",
-   "bid" :134567,
-   "ask" : 134520,
-   "source": "live"
+  "epochMilliseconds": 94875945798,
+  "symbol": "EURUSD",
+  "bid": 134567,
+  "ask": 134520,
+  "source": "live",
+  "streamId": "00000000-0000-0000-0000-000000000000"
 }
 ```

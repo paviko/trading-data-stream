@@ -34,6 +34,7 @@
     <properties>
         <!-- Interrupted Exception check drops to 92% -->
         <coverage.exclude.pattern.1>*DirectDukascopyNoCache</coverage.exclude.pattern.1>
+        <coverage.exclude.pattern.2>*Configuration</coverage.exclude.pattern.2>
     </properties>
 
     <dependencies>
