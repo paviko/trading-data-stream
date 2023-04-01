@@ -21,7 +21,7 @@ Check out the source to see a working example in example-cli (Spring Boot comman
 
 # Changes
 
-## 2.1.0
+## 2.1.1
 * Library updates.
 
 ## 2.1.0
