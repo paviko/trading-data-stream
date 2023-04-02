@@ -60,92 +60,6 @@ Further examples at https://limemojito.com/reading-dukascopy-bi5-tick-history-wi
 
 ---
 
-# Changes
-
-## 2.1.2
-* Added an example spring configuration.
-
-## 2.1.1
-* Library updates.
-
-## 2.1.0
-
-### Breaking API changes
-
-* Moved generic stream classes into trading.model.streams package.
-* There are some minor API changes such as adding IOException to close methods where missed.
-
-### Other Changes
-
-* Reworked stream model and produced a set of generic input stream utilities in trading.model.stream.
-* Added a stream Collection method to TradingJsonStreams, prefer the InputStream version for efficiency.
-* trading.model.stream.TradingInputStreamMapper produces generic streams and transforms for any MODEL.
-* trading.model.stream.TradingInputStreamMapper has overloads for onClose Runnable for cleanup operations.
-
-## 2.0.5
-
-* Spotted fix for hasNext in TradingInputJsonStreams. Fix ported from closed source.
-
-## 2.0.4
-
-* Correct aggregation bug in count before and count after bar searches. A duplicate bar may have been included in streams due to
-  some end searching being inclusive.
-
-## 2.0.3
-
-* Correct write bug in JSON stream output that fails for large files with early close due to Jackson auto close.
-
-## 2.0.2
-
-* Support for streaming JSON file formats (as arrays) using TradingInputJsonStreams. Relies on Jackson.
-
-## 2.0.1
-
-* Added locking around local and s3 cache usage for multithreaded scenarios.
-
-## 2.0.0
-
-### Breaking API changes
-
-* Added bar caching that alters the cache storage and cache classes. Storage is backwards compatible however
-  the construction of the caches has altered. Bar Caching produced repeated aggregations at 240X faster in our example
-  in technical notes.
-* Due to bar caching tick visitors on aggregation queries are no longer supported.
-* Tick search functions **are** still supported for tick visitors.
-
-### Other changes
-
-* Added a read only json property to models with the model version (1.0).
-* Split DukascopySearch implementation into Tick and Bar searches (backward compatible).
-* Local cache can have the cache directory set via an alternate constructor.
-* trading-data-stream development no longer deletes the default cache location.
-
-## 1.2.0
-
-* Improved CSV model by introducing a base class that can be extended for other projects.
-
-## 1.1.0
-
-* Stop searches at the Beginning of Time - arbitrarily defaulted to be 2010-01-01T00:00:00Z.
-* Allow configuration of the Beginning of Time.
-* Aggregate for a number of bars before a given instant.
-* Aggregate for a number of bars after a given instant.
-* Added delayed n-retry with exponential backoff on Dukascopy IO failure. Defaults to 3X and 2 second.
-* Upped the rate limit after discovering 500s are occasional errors on empty paths.
-* Added a cache primer application to test load limits (concurrent requests).
-
-## 1.0.0
-
-* Initial release to open source.
-* Search ticks by symbol, time range,
-* Aggregate bars by time range.
-* Convert models (Tick, Bar) to csv.
-* Cache dukascopy files Direct No Cache, Local Cache and S3 Cache.
-* Combine caches into cache chains such as Local -> S3 -> Direct.
-* Example CLI
-
----
-
 # Quickstart
 
 ```shell
@@ -298,3 +212,89 @@ source is live | historical
   "streamId": "00000000-0000-0000-0000-000000000000"
 }
 ```
+
+---
+
+# Changes
+
+## 2.1.2
+* Added an example spring configuration.
+
+## 2.1.1
+* Library updates.
+
+## 2.1.0
+
+### Breaking API changes
+
+* Moved generic stream classes into trading.model.streams package.
+* There are some minor API changes such as adding IOException to close methods where missed.
+
+### Other Changes
+
+* Reworked stream model and produced a set of generic input stream utilities in trading.model.stream.
+* Added a stream Collection method to TradingJsonStreams, prefer the InputStream version for efficiency.
+* trading.model.stream.TradingInputStreamMapper produces generic streams and transforms for any MODEL.
+* trading.model.stream.TradingInputStreamMapper has overloads for onClose Runnable for cleanup operations.
+
+## 2.0.5
+
+* Spotted fix for hasNext in TradingInputJsonStreams. Fix ported from closed source.
+
+## 2.0.4
+
+* Correct aggregation bug in count before and count after bar searches. A duplicate bar may have been included in streams due to
+  some end searching being inclusive.
+
+## 2.0.3
+
+* Correct write bug in JSON stream output that fails for large files with early close due to Jackson auto close.
+
+## 2.0.2
+
+* Support for streaming JSON file formats (as arrays) using TradingInputJsonStreams. Relies on Jackson.
+
+## 2.0.1
+
+* Added locking around local and s3 cache usage for multithreaded scenarios.
+
+## 2.0.0
+
+### Breaking API changes
+
+* Added bar caching that alters the cache storage and cache classes. Storage is backwards compatible however
+  the construction of the caches has altered. Bar Caching produced repeated aggregations at 240X faster in our example
+  in technical notes.
+* Due to bar caching tick visitors on aggregation queries are no longer supported.
+* Tick search functions **are** still supported for tick visitors.
+
+### Other changes
+
+* Added a read only json property to models with the model version (1.0).
+* Split DukascopySearch implementation into Tick and Bar searches (backward compatible).
+* Local cache can have the cache directory set via an alternate constructor.
+* trading-data-stream development no longer deletes the default cache location.
+
+## 1.2.0
+
+* Improved CSV model by introducing a base class that can be extended for other projects.
+
+## 1.1.0
+
+* Stop searches at the Beginning of Time - arbitrarily defaulted to be 2010-01-01T00:00:00Z.
+* Allow configuration of the Beginning of Time.
+* Aggregate for a number of bars before a given instant.
+* Aggregate for a number of bars after a given instant.
+* Added delayed n-retry with exponential backoff on Dukascopy IO failure. Defaults to 3X and 2 second.
+* Upped the rate limit after discovering 500s are occasional errors on empty paths.
+* Added a cache primer application to test load limits (concurrent requests).
+
+## 1.0.0
+
+* Initial release to open source.
+* Search ticks by symbol, time range,
+* Aggregate bars by time range.
+* Convert models (Tick, Bar) to csv.
+* Cache dukascopy files Direct No Cache, Local Cache and S3 Cache.
+* Combine caches into cache chains such as Local -> S3 -> Direct.
+* Example CLI
