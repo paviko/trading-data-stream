@@ -43,12 +43,12 @@ public class TradingInputJsonStreams {
     /**
      * Write the supplied input stream to the output stream using Jackson in ARRAY format.  The output is a streamed write one model object
      * at a time.  Note there is a streaming version of this method which would be more efficient than loading a collection into memory.
-     * @see #writeAsJsonArray(TradingInputStream, OutputStream)
      *
      * @param <Model>      Model object to write (needs to be "Jsonable").
-     * @param collection  Collection to stream data from.
+     * @param collection   Collection to stream data from.
      * @param outputStream output stream to write to.
      * @throws IOException on an IO failure.
+     * @see #writeAsJsonArray(TradingInputStream, OutputStream)
      */
     public <Model> void writeAsJsonArray(Collection<Model> collection, OutputStream outputStream) throws IOException {
         writeFromIterator(outputStream, collection.iterator());
@@ -63,7 +63,8 @@ public class TradingInputJsonStreams {
      * @param outputStream output stream to write to.
      * @throws IOException on an IO failure.
      */
-    public <Model> void writeAsJsonArray(TradingInputStream<Model> inputStream, OutputStream outputStream) throws IOException {
+    public <Model> void writeAsJsonArray(TradingInputStream<Model> inputStream, OutputStream outputStream) throws
+                                                                                                           IOException {
         writeFromIterator(outputStream, inputStream.iterator());
     }
 
@@ -77,8 +78,28 @@ public class TradingInputJsonStreams {
      * @return An input stream ready to stream read data.
      * @throws IOException on a creation failure.
      */
-    public <Model> TradingInputStream<Model> createStream(InputStream inputStream, Class<Model> type) throws IOException {
-        return new JsonTradingInputStream<>(inputStream, mapper, type);
+    public <Model> TradingInputStream<Model> createStream(InputStream inputStream, Class<Model> type) throws
+                                                                                                      IOException {
+        return createStream(inputStream, type, (model) -> {
+        });
+    }
+
+    /**
+     * Create an input stream for the supplied model using expected json data from the input stream in ARRAY format.
+     * Read is streamed one object at a time.  Apply a visitor to the object when it is restored.
+     *
+     * @param <Model>     Model object to read (needs to be "Jsonable").
+     * @param inputStream Model stream to read
+     * @param type        class instance of the expected model type (to support Jackson json read).
+     * @param visitor     Visitor to apply to reconstituted model object.
+     * @return An input stream ready to stream read data.
+     * @throws IOException on a creation failure.
+     */
+    public <Model> TradingInputStream<Model> createStream(InputStream inputStream,
+                                                          Class<Model> type,
+                                                          TradingInputStreamMapper.Visitor<Model> visitor) throws
+                                                                                                           IOException {
+        return new JsonTradingInputStream<>(inputStream, mapper, type, visitor);
     }
 
     private <Model> void writeFromIterator(OutputStream outputStream, Iterator<Model> iterator) throws IOException {
@@ -97,9 +118,14 @@ public class TradingInputJsonStreams {
     private static class JsonTradingInputStream<Model> implements TradingInputStream<Model> {
         private final Class<Model> type;
         private final JsonParser jsonParser;
+        private final TradingInputStreamMapper.Visitor<Model> visitor;
         private Model peek;
 
-        JsonTradingInputStream(InputStream inputStream, ObjectMapper mapper, Class<Model> type) throws IOException {
+        JsonTradingInputStream(InputStream inputStream,
+                               ObjectMapper mapper,
+                               Class<Model> type,
+                               TradingInputStreamMapper.Visitor<Model> visitor) throws IOException {
+            this.visitor = visitor;
             // work around auto-close if jackson passed a stream.
             this.jsonParser = mapper.createParser(inputStream);
             this.type = type;
@@ -146,6 +172,7 @@ public class TradingInputJsonStreams {
             } while (nextToken != null && nextToken != JsonToken.START_OBJECT);
             if (nextToken != null) {
                 peek = jsonParser.readValueAs(type);
+                visitor.visit(peek);
             } else {
                 peek = null;
             }

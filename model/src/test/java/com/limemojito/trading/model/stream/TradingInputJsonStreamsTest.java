@@ -33,6 +33,7 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static com.limemojito.trading.model.StreamData.REALTIME_UUID;
@@ -83,6 +84,18 @@ public class TradingInputJsonStreamsTest {
             List<Bar> reconstituted = mapper.readValue(outputStream.toByteArray(), barListType);
             assertThat(reconstituted).isEqualTo(bars);
         }
+    }
+
+    @Test
+    public void shouldApplyVisitorToReconstitutedArray() throws Exception {
+        AtomicInteger count = new AtomicInteger();
+        try (InputStream inputStream = getClass().getResourceAsStream("/EURUSD/2021/11/01/00h_M5_bars.json");
+             TradingInputStream<Bar> barStream = jsonStreams.createStream(inputStream,
+                                                                          Bar.class,
+                                                                          bar -> count.incrementAndGet())) {
+            assertThat(barStream.stream().collect(Collectors.toList())).hasSize(12);
+        }
+        assertThat(count.get()).isEqualTo(12);
     }
 
     @Test
