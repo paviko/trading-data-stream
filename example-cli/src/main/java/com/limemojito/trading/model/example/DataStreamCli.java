@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 Lime Mojito Pty Ltd
+ * Copyright 2011-2024 Lime Mojito Pty Ltd
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 
-import javax.validation.Validator;
+import jakarta.validation.Validator;
 
 @SpringBootApplication
 public class DataStreamCli {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 Lime Mojito Pty Ltd
+ * Copyright 2011-2024 Lime Mojito Pty Ltd
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.validation.Validator;
+import jakarta.validation.Validator;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -126,7 +126,7 @@ public class DirectDukascopyNoCache implements DukascopyCache {
 
     @Value
     @SuppressWarnings("RedundantModifiersValueLombok")
-    private static class UrlDataSource implements DataSource {
+    private static final class UrlDataSource implements DataSource {
         private final String url;
 
         @Override

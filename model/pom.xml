@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright 2011-2023 Lime Mojito Pty Ltd
+  ~ Copyright 2011-2024 Lime Mojito Pty Ltd
   ~
   ~    Licensed under the Apache License, Version 2.0 (the "License");
   ~    you may not use this file except in compliance with the License.
@@ -22,13 +22,13 @@
     <parent>
         <groupId>com.limemojito.oss.standards</groupId>
         <artifactId>jar-development</artifactId>
-        <version>2.7.9</version>
+        <version>14.0.19</version>
         <relativePath />
     </parent>
 
     <groupId>com.limemojito.oss.trading.trading-data-stream</groupId>
     <artifactId>model</artifactId>
-    <version>2.1.4-SNAPSHOT</version>
+    <version>3.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -97,7 +97,7 @@
         <dependency>
             <groupId>com.limemojito.oss.test</groupId>
             <artifactId>test-utilities</artifactId>
-            <version>10.0.1</version>
+            <version>14.0.19</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

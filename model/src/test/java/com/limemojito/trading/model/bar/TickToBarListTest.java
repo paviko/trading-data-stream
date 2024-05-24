@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 Lime Mojito Pty Ltd
+ * Copyright 2011-2024 Lime Mojito Pty Ltd
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import com.limemojito.trading.model.tick.dukascopy.DukascopyTickInputStream;
 import com.limemojito.trading.model.tick.dukascopy.DukascopyUtils;
 import org.junit.jupiter.api.Test;
 
-import javax.validation.Validator;
+import jakarta.validation.Validator;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
