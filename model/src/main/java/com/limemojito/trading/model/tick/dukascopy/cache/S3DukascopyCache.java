@@ -27,7 +27,7 @@ import com.limemojito.trading.model.tick.dukascopy.DukascopyCache;
 import com.limemojito.trading.model.tick.dukascopy.DukascopyTickSearch;
 import com.limemojito.trading.model.tick.dukascopy.criteria.BarCriteria;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.compress.utils.IOUtils;
+import org.apache.commons.io.IOUtils;
 import org.springframework.stereotype.Service;
 
 import jakarta.validation.Validator;

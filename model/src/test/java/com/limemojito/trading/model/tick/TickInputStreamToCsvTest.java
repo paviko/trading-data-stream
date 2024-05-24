@@ -19,17 +19,12 @@ package com.limemojito.trading.model.tick;
 
 import com.limemojito.trading.model.TradingInputStream;
 import com.limemojito.trading.model.tick.dukascopy.DukascopyTickInputStream;
+import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.compress.utils.IOUtils;
+import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
 
-import jakarta.validation.Validator;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 
 import static com.limemojito.trading.model.tick.dukascopy.DukascopyUtils.dukascopyClassResourceToTempFile;
 import static com.limemojito.trading.model.tick.dukascopy.DukascopyUtils.setupValidator;

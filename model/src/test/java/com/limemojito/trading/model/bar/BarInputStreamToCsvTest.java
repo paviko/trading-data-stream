@@ -20,23 +20,14 @@ package com.limemojito.trading.model.bar;
 import com.limemojito.trading.model.TradingInputStream;
 import com.limemojito.trading.model.tick.dukascopy.DukascopyTickInputStream;
 import com.limemojito.trading.model.tick.dukascopy.DukascopyUtils;
+import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.compress.utils.IOUtils;
+import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
 
-import jakarta.validation.Validator;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 
-import static com.limemojito.trading.model.bar.Bar.Period.H1;
-import static com.limemojito.trading.model.bar.Bar.Period.M10;
-import static com.limemojito.trading.model.bar.Bar.Period.M15;
-import static com.limemojito.trading.model.bar.Bar.Period.M30;
-import static com.limemojito.trading.model.bar.Bar.Period.M5;
+import static com.limemojito.trading.model.bar.Bar.Period.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
