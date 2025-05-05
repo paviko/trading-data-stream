@@ -169,6 +169,8 @@ public class Bar implements StreamData<Bar> {
     @RequiredArgsConstructor
     @Getter
     public enum Period {
+        S15(Duration.ofSeconds(15)),
+        M1(Duration.ofMinutes(1)),
         M5(Duration.ofMinutes(5)),
         M10(Duration.ofMinutes(10)),
         M15(Duration.ofMinutes(15)),
