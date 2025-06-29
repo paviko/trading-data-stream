@@ -73,7 +73,7 @@ public abstract class FallbackDukascopyCache implements DukascopyCache {
     @Override
     public String cacheStats() {
         final double toPercent = 100.0;
-        return String.format("%s %d %dh %dm %.2f%% -> (%s)",
+        return String.format(java.util.Locale.US, "%s %d %dh %dm %.2f%% -> (%s)",
                              getClass().getSimpleName(),
                              getRetrieveCount(),
                              getHitCount(),
