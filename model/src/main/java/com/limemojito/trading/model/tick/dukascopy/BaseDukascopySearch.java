@@ -25,9 +25,9 @@ import java.time.Instant;
 
 public class BaseDukascopySearch {
     /**
-     * Defaulting the beginning of Dukascopy searches to be 2010.  This puts a limit on recursive searching.
+     * Defaulting the beginning of Dukascopy searches to be 2004.  This puts a limit on recursive searching.
      */
-    public static final String DEFAULT_BEGINNING_OF_TIME = "2010-01-01T00:00:00Z";
+    public static final String DEFAULT_BEGINNING_OF_TIME = "2004-01-01T00:00:00Z";
 
     @Setter
     @Getter
