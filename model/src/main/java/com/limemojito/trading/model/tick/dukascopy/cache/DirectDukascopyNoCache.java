@@ -26,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import jakarta.validation.Validator;
 import java.io.BufferedInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -154,7 +155,10 @@ public class DirectDukascopyNoCache implements DukascopyCache {
             log.info("Loading from {}, waited {}s", url, waited);
             return new BufferedInputStream(url.openStream(), IO_BUFFER_SIZE);
         } catch (IOException e) {
-            if (e.getMessage() != null && e.getMessage().contains("500") && callCount <= RETRY_COUNT) {
+            if (e instanceof FileNotFoundException) {
+                log.error("File not found: {}", e.getMessage());
+                return new BufferedInputStream(new java.io.ByteArrayInputStream(new byte[0]), IO_BUFFER_SIZE);
+            } else if (e.getMessage() != null && e.getMessage().contains("500") && callCount <= RETRY_COUNT) {
                 waitForRetry(e, callCount);
                 retryCounter.getAndIncrement();
                 return fetchWithRetry(url, ++callCount);
